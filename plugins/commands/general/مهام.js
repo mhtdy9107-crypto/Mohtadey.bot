@@ -1,10 +1,10 @@
 const config = {
-    name: "todo",
+    name: "مهام",
     description: "List of things to do",
     usage: "[add|remove|list] [todo|index]",
     cooldown: 3,
     permissions: [0, 1, 2],
-    credits: "XaviaTeam"
+    credits: "ᏕᎥᏁᎨᎧ"
 }
 
 const langData = {
