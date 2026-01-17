@@ -1,10 +1,10 @@
 const config = {
-    name: "quote",
+    name: "يقتبس",
     description: "Anime Quotes!",
     usage: "[character]",
     cooldown: 3,
     permissions: [0, 1, 2],
-    credits: "XaviaTeam"
+    credits: "ᏕᎥᏁᎨᎧ"
 }
 
 const langData = {
