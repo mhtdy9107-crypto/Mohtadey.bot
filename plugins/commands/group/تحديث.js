@@ -1,6 +1,6 @@
 const _12HOURS = 12 * 60 * 60 * 1000;
 const config = {
-    name: "refresh",
+    name: "تحديث ",
     aliases: ["rfs"],
     description: "Refresh thread data",
     permissions: [1, 2],
