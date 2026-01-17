@@ -2,7 +2,7 @@ import { Assets } from "../../../core/handlers/assets.js";
 import { loadPlugins } from "../../../core/var/modules/loader.js";
 
 const config = {
-    name: "plugins",
+    name: "اضافات",
     aliases: ["pl", "plg", "plugin"],
     description: "Manage plugins",
     usage: "[reload]/[list]/[install]",
