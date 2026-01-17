@@ -1,5 +1,5 @@
 const config = {
-    name: "out",
+    name: "غادر",
     aliases: ["leave"],
     description:
         "Leave the group/all groups, please note that the out all will not include the message request/spam group",
@@ -36,8 +36,8 @@ const langData = {
         invalidThreadIDs: "معرفات المجموعة غير صالحة.",
         confirm: "تفاعل ب 👍 للتأكيد.",
         moderator: "مشرف الروبوت",
-        out: "⚠️ انتبه⚠️\n\nأمر البوت بمغادرة المجموعة!\nاتصال {authorName} لمزيد من التفاصيل.",
-        successOut: "غادر {successCount} المجموعات.",
+        out: "",
+        successOut:"",
         failOut: "غير قادر على مغادرة المجموعة:\n{fail}",
         error: "حصل خطأ. الرجاء المحاوله مرة اخرى.",
     },
