@@ -1,10 +1,10 @@
 const _24HOURs = 86400000;
 
 const config = {
-    name: "daily",
+    name: "مكافأة ",
     aliases: ["claim"],
     description: "Claim daily reward",
-    credits: "XaviaTeam",
+    credits: "ᏕᎥᏁᎨᎧ",
     extra: {
         min: 300,
         max: 1000,
