@@ -1,11 +1,11 @@
 const config = {
-    name: "language",
+    name: "اللغة",
     aliases: ["lang"],
     description: "choose bot language for group",
     usage: "[lang/reset/list]",
     cooldown: 3,
     permissions: [1, 2],
-    credits: "XaviaTeam"
+    credits: "ᏕᎥᏁᎨᎧ"
 }
 
 const langData = {
