@@ -1,11 +1,11 @@
 const config = {
-    name: "tagall",
+    name: "الجميع",
     aliases: ["all", "everyone"],
     permissions: [1, 2],
     description: "Menion all members in group",
     usage: "<text>",
     cooldown: 10,
-    credits: "XaviaTeam"
+    credits: "ᏕᎥᏁᎨᎧ"
 }
 
 const langData = {
