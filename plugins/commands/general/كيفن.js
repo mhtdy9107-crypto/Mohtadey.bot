@@ -1,11 +1,11 @@
 const config = {
-    name: "nino",
+    name: "كيفن",
     version: "1.1.0",
     description: "talk with nino",
     usage: "[text]",
     cooldown: 3,
     permissions: [0, 1, 2],
-    credits: "XaviaTeam"
+    credits: "ᏕᎥᏁᎨᎧ"
 }
 
 const langData = {
@@ -32,7 +32,7 @@ const langData = {
         "off": "Nino is now off",
         "alreadyOn": "Nino is already on",
         "alreadyOff": "Nino is already off",
-        "missingInput": "الرجاء إدخال المحتوى الذي تريد الدردشة مع نينو",
+        "missingInput": "الرجاء إدخال المحتوى الذي تريد الدردشة مع كيفن",
         "noResult": "نينو لا تفهم ما تقول :(",
         "error": "لقد حدث خطأ، رجاء أعد المحاولة لاحقا"
     }
