@@ -1,5 +1,5 @@
 const config = {
-    name: "say",
+    name: "قول",
     aliases: ["tts", "talk", "speak"],
     description: "Text to speech",
     usage: '[text]',
