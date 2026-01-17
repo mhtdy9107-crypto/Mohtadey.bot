@@ -1,5 +1,5 @@
 const config = {
-    name: "maintain",
+    name: "معالجة",
     description: "on/off maintain mode",
     usage: "[on/off]",
     cooldown: 3,
@@ -23,9 +23,9 @@ const langData = {
     },
     "ar_SY": {
         "alreadyOn": "الروبوت في وضع الصيانة بالفعل",
-        "on": "تم تشغيل وضع الصيانة",
+        "on": "تم تفعيل وضع المعالج ",
         "alreadyOff": "البوت خارج وضع الصيانة بالفعل",
-        "off": "تم إيقاف تشغيل وضع الصيانة"
+        "off": "تم ايقاف المعالجه"
     }
 }
 
