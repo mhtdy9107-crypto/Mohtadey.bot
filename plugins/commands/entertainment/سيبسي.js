@@ -1,10 +1,10 @@
 const config = {
-    name: "sadcat",
+    name: "سيبسي",
     description: "sadcat meme maker",
     usage: "[text]",
     cooldown: 3,
     permissions: [0, 1, 2],
-    credits: "XaviaTeam"
+    credits: "ᏕᎥᏁᎨᎧ"
 }
 
 const langData = {
