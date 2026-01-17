@@ -1,12 +1,12 @@
 const config = {
-    name: "sicbo",
+    name: "سكوبو",
     _name: {
         "vi_VN": "taixiu"
     },
     aliases: ["taixiu", "tx"],
     description: "Play sicbo with bot.",
     usage: "[tai/xiu] [bet] | [big/small] [bet] (default bet is 50)",
-    credits: "XaviaTeam",
+    credits: "ᏕᎥᏁᎨᎧ",
     extra: {
         minbet: 50
     }
