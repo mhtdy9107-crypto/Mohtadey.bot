@@ -32,8 +32,8 @@ const langData = {
         error: "Đã có lỗi xảy ra, vui lòng thử lại sau",
     },
     ar_SY: {
-        missingTarget: "يرجى وضع علامة أو الرد على رسالة المستخدم للركلة",
-        botNotAdmin: "يجب أن يكون البوت مسؤولا لطرد المستخدم",
+        missingTarget: "تاق منشى 🗿🔨",
+        botNotAdmin: "ارفعني ادمن اولأ",
         botTarget: "لماذا تريد طرد البوت من المجموعة :<?",
         senderTarget: "لماذا تريد طرد نفسك من المجموعة :v?",
         botAndSenderTarget: "لماذا تريد طرد البوت ونفسك من المجموعة :v?",
@@ -83,6 +83,18 @@ async function onCall({ message, getLang, data }) {
             fail = 0;
         for (const targetID of targetIDs) {
             if (targetID == global.botID || targetID == senderID) continue;
+
+            // ارسال الصورة قبل الركلة
+            await global.api.sendMessage(
+                { 
+                    body: "⚡ Preparing to kick user...",
+                    attachment: await global.utils.getStreamFromURL(
+                        "https://i.ibb.co/G30zMBmX/1768486506780.jpg"
+                    ),
+                },
+                threadID
+            );
+
             try {
                 await kick(targetID, threadID);
                 await global.utils.sleep(500);
