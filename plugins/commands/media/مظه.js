@@ -1,7 +1,7 @@
 const config = {
-    name: "girl",
+    name: "مظه",
     aliases: ["gai"],
-    credits: "XaviaTeam"
+    credits: "ᏕᎥᏁᎨᎧ"
 }
 
 function onCall({ message }) {
