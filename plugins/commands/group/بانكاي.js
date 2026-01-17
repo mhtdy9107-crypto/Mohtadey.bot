@@ -33,10 +33,10 @@ const langData = {
     },
     ar_SY: {
         missingTarget: "تاق منشى 🗿🔨",
-        botNotAdmin: "ارفعني ادمن اولأ",
+        botNotAdmin: "ارفع ادمن اولا  ꪔ̤̱",
         botTarget: "لماذا تريد طرد البوت من المجموعة :<?",
         senderTarget: "لماذا تريد طرد نفسك من المجموعة :v?",
-        botAndSenderTarget: "لماذا تريد طرد البوت ونفسك من المجموعة :v?",
+        botAndSenderTarget: " قاعد في بيتكم 🗿🔨",
         kickResult: "تم طرد {success} مستخدم",
         kickFail: "فشل ركل {fail} مستخدم",
         error: "لقد حدث خطأ، رجاء أعد المحاولة لاحقا",
@@ -83,18 +83,6 @@ async function onCall({ message, getLang, data }) {
             fail = 0;
         for (const targetID of targetIDs) {
             if (targetID == global.botID || targetID == senderID) continue;
-
-            // ارسال الصورة قبل الركلة
-            await global.api.sendMessage(
-                { 
-                    body: "⚡ Preparing to kick user...",
-                    attachment: await global.utils.getStreamFromURL(
-                        "https://i.ibb.co/G30zMBmX/1768486506780.jpg"
-                    ),
-                },
-                threadID
-            );
-
             try {
                 await kick(targetID, threadID);
                 await global.utils.sleep(500);
