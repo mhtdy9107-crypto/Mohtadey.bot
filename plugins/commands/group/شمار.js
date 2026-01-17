@@ -1,10 +1,10 @@
 const config = {
-    name: "threadnoti",
+    name: "شمار",
     permissions: [1, 2],
     description: "Turn on/off thread notification for yourself",
     usage: "[on/off]",
     cooldown: 5,
-    credits: "XaviaTeam"
+    credits: "ᏕᎥᏁᎨᎧ"
 }
 
 const langData = {
