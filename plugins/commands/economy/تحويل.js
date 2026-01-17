@@ -1,7 +1,7 @@
 const config = {
-    name: "send",
+    name: "تحويل",
     aliases: ["pay"],
-    credits: "XaviaTeam",
+    credits: "ᏕᎥᏁᎨᎧ",
     description: "Send money to other user",
     usage: "<mention> <amount>",
     cooldown: 5,
