@@ -1,5 +1,5 @@
 const config = {
-    name: "trans",
+    name: "ترجم",
     aliases: ['translate', 'dich'],
     description: "Translate text to bot language.",
     usage: '[lang] [text]',
