@@ -42,11 +42,11 @@ async function onCall({ message, args, getLang }) {
         return message.reply(getLang(choice ? "enabled" : "disabled"));
     } catch (err) {
         console.error(err);
-        message.reply(getLang("error", { error: err }));
+        messae.reply(getLang("error", { error: err }));
     }
 }
 
-export default {
+export dfault {
     config,
     langData,
     onCall
