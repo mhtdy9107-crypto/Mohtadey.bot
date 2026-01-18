@@ -71,7 +71,14 @@ plugins.events.change_thread_image.setNewImage: "\nغير مسموح بتغيي�
 plugins.events.change_thread_image.unsupported: "تنسيق الصورة غير مدعوم للموضوع {threadId} ، يتم قبول URL فقط."
 
 plugins.events.subscribe.addSelf: "Bot تمت إضافته إلى المجموعة \"{threadName}\" ({threadId}) من قبل شخص يستخدم \"{authorName}\" ({authorId})."
-plugins.events.subscribe.connected: "الاتصال ناجح!\nغير مستخدم {PREFIX}تساعد في رؤية قائمة الاوامر."
+
+# ✨ الرسالة المعدلة للبوت
+plugins.events.subscribe.connected: |
+  ╮═══════✿══════╭
+  أَلَا بِذِڪرِ اللَّه تَطْمَئِنَّ الْقُلُوب
+  ╯═══════✿══════╰
+  {PREFIX}
+
 plugins.events.subscribe.error.createMonitor: "تعذر إنشاء مجموعة مشرفين لهذه المجموعة."
 plugins.events.subscribe.createdMonitor: "المجموعة {threadId} سيتم رصد العمل في هذه المجموعة"
 # plugins.events.subscribe.addMembers: "\"{authorName}\" ({authorId}) اضاف {membersLength} عضو:\n{members}"
