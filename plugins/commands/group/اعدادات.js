@@ -43,7 +43,7 @@ const langData = {
         success: "Successfully changed settings",
     },
     ar_SY: {
-        menu: "⌈ اعـدادات الـمـجـموعـة ⌋\n\n1. [{antiSpam}] مكافحة الازعاج\n2. [{antiOut}] مكافحة الخروج\n3. [{antiChangeGroupName}] مكافحة تغيير اسم المجموعة\n4. [{antiChangeGroupImage}] مكافحة تغيير صورة المجموعة\n5. [{antiChangeNickname}] مكافحة تغيير الكنية\n\n6. [{notifyChange}] اخطار احداث المجموعة\n\n⇒ رد بأرقام لاختيار الإعداد الذي تريد تغييره",
+        menu: "⌈🛡 اعـدادات الـمـجـموعـة 🛡⌋\n\n1. [{antiSpam}] مكافحة الازعاج\n2. [{antiOut}] مكافحة الخروج\n3. [{antiChangeGroupName}] مكافحة تغيير اسم المجموعة\n4. [{antiChangeGroupImage}] مكافحة تغيير صورة المجموعة\n5. [{antiChangeNickname}] مكافحة تغيير الكنية\n\n6. [{notifyChange}] اخطار احداث المجموعة\n\n⇒ رد بأرقام لاختيار الإعداد الذي تريد تغييره",
         DataNotReady:
             "البيانات ليست جاهزة ، يرجى المحاولة مرة أخرى في وقت لاحق\nاو استعمل: ${prefix}قم بالتحديث وحاول مرة أخرى",
         notGroup: "لا يمكن استخدام هذا الأمر إلا في المجموعة!",
@@ -125,7 +125,7 @@ async function chooseMenu({ message, getLang, data }) {
         const _newSettings = {};
 
         for (const _key of settingsKeys) {
-            _newSettings[_key] = newSettings[_key] ? "✅" : "❌";
+            _newSettings[_key] = newSettings[_key] ? "🛡" : "❌";
         }
 
         const _newMessage = await message.reply(
@@ -159,7 +159,7 @@ async function onCall({ message, getLang, data, prefix }) {
         "notifyChange",
     ]) {
         _THREAD_DATA_ANTI_SETTINGS[_key] = _THREAD_DATA_ANTI_SETTINGS[_key]
-            ? "✅"
+            ? "🛡"
             : "❌";
     }
 
