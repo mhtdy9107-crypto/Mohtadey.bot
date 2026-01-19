@@ -125,7 +125,7 @@ async function chooseMenu({ message, getLang, data }) {
         const _newSettings = {};
 
         for (const _key of settingsKeys) {
-            _newSettings[_key] = newSettings[_key] ? "🛡" : "❌";
+            _newSettings[_key] = newSettings[_key] ? "✅" : "❌";
         }
 
         const _newMessage = await message.reply(
@@ -159,7 +159,7 @@ async function onCall({ message, getLang, data, prefix }) {
         "notifyChange",
     ]) {
         _THREAD_DATA_ANTI_SETTINGS[_key] = _THREAD_DATA_ANTI_SETTINGS[_key]
-            ? "🛡"
+            ? "✅"
             : "❌";
     }
 
