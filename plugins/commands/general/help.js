@@ -32,66 +32,63 @@ ${prefix}${cmd.name} ${cmd.usage || ""}
     // =========================
     // تجميع الأوامر حسب الأقسام
     // =========================
-    let devCmds = [];
+    let adminCmds = [];
+    let economyCmds = [];
+    let entertainmentCmds = [];
+    let generalCmds = [];
     let groupCmds = [];
-    let toolsCmds = [];
-    let funCmds = [];
-    let otherCmds = [];
+    let mediaCmds = [];
+    let nsfwCmds = [];
 
     for (const [key, cmd] of commandsConfig.entries()) {
         if (cmd.isHidden) continue;
-        if (!cmd.permissions) cmd.permissions = [0, 1, 2];
+        if (!cmd.permissions) cmd.permissions = [0,1,2];
         if (!cmd.permissions.some(p => userPermissions.includes(p))) continue;
 
         const name = cmd.name || key;
         const cat = (cmd.category || "").toLowerCase();
 
-        if (cat.includes("dev") || cat.includes("owner") || cat.includes("المطور")) {
-            devCmds.push(name);
-        } else if (cat.includes("group") || cat.includes("admin") || cat.includes("المجموعه")) {
-            groupCmds.push(name);
-        } else if (cat.includes("tool") || cat.includes("util") || cat.includes("ادوات")) {
-            toolsCmds.push(name);
-        } else if (cat.includes("fun") || cat.includes("game") || cat.includes("ترفيه")) {
-            funCmds.push(name);
-        } else {
-            otherCmds.push(name);
-        }
+        if (cat.includes("admin") || cat.includes("المطور")) adminCmds.push(name);
+        else if (cat.includes("economy") || cat.includes("اقتصاد")) economyCmds.push(name);
+        else if (cat.includes("fun") || cat.includes("game") || cat.includes("ترفيه")) entertainmentCmds.push(name);
+        else if (cat.includes("general") || cat.includes("عام")) generalCmds.push(name);
+        else if (cat.includes("group") || cat.includes("المجموعه")) groupCmds.push(name);
+        else if (cat.includes("media") || cat.includes("وسائط")) mediaCmds.push(name);
+        else if (cat.includes("nsfw") || cat.includes("اباحي")) nsfwCmds.push(name);
     }
 
-    // =========================
-    // شكل القائمة
-    // =========================
+    const formatCmds = (arr) => arr.length ? arr.map(c => `▣${c}`).join(" ") : "لا توجد أوامر";
+
+    let total = adminCmds.length + economyCmds.length + entertainmentCmds.length + generalCmds.length + groupCmds.length + mediaCmds.length + nsfwCmds.length;
+
     let body =
-`✨🤖 قائمة أوامر البوت 🤖✨
-━━━━━━━━━━━━━━━━━━━
+`⌈ ADMIN ⌋
+${formatCmds(adminCmds)}
 
-👑 قسم المطوّر
-${devCmds.length ? devCmds.map(c => `• ${c}`).join("\n") : "لا توجد أوامر"}
+⌈ ECONOMY ⌋
+${formatCmds(economyCmds)}
 
-━━━━━━━━━━━━━━━━━━━
-👥 قسم المجموعة
-${groupCmds.length ? groupCmds.map(c => `• ${c}`).join("\n") : "لا توجد أوامر"}
+⌈ ENTERTAINMENT ⌋
+${formatCmds(entertainmentCmds)}
 
-━━━━━━━━━━━━━━━━━━━
-🛠️ قسم الأدوات
-${toolsCmds.length ? toolsCmds.map(c => `• ${c}`).join("\n") : "لا توجد أوامر"}
+⌈ GENERAL ⌋
+${formatCmds(generalCmds)}
 
-━━━━━━━━━━━━━━━━━━━
-🎮 قسم الترفيه
-${funCmds.length ? funCmds.map(c => `• ${c}`).join("\n") : "لا توجد أوامر"}
+⌈ GROUP ⌋
+${formatCmds(groupCmds)}
 
-━━━━━━━━━━━━━━━━━━━
-📦 أوامر أخرى
-${otherCmds.length ? otherCmds.map(c => `• ${c}`).join("\n") : "لا توجد أوامر"}
+⌈ MEDIA ⌋
+${formatCmds(mediaCmds)}
 
-━━━━━━━━━━━━━━━━━━━
-📝 لشرح أي أمر:
-${prefix}مساعدة <اسم الأمر>
+⌈ NSFW ⌋
+${formatCmds(nsfwCmds)}
+
+⇒ المجموع: ${total} الأوامر
+⇒ يستخدم ${prefix}[امر] لمزيد من المعلومات حول الأمر.
 `;
 
     // =========================
-    // 🔲 إضافة الصورة مباشرة
+    // إضافة الصورة مباشرة
     // =========================
     const imageUrl = "https://i.ibb.co/xt75p0yk/1768714709999.jpg";
     return message.reply({ body, attachment: await global.getStream(imageUrl) });
