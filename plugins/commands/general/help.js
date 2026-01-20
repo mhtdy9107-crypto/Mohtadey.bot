@@ -90,7 +90,7 @@ ${formatCmds(nsfwCmds)}
     // =========================
     // إضافة الصورة مباشرة
     // =========================
-    const imageUrl = "https://i.ibb.co/xt75p0yk/1768714709999.jpg";
+    const imageUrl = "https://i.ibb.co/cS6SjxcB/1768628585933.jpg";
     return message.reply({ body, attachment: await global.getStream(imageUrl) });
 }
 
