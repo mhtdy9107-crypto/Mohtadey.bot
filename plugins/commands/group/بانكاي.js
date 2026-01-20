@@ -1,3 +1,7 @@
+import fs from "fs";
+import path from "path";
+import axios from "axios";
+
 const config = {
     name: "بانكاي",
     description: "kick user",
@@ -36,7 +40,7 @@ const langData = {
         botNotAdmin: "ارفع ادمن اولا  ꪔ̤̱",
         botTarget: "لماذا تريد طرد البوت من المجموعة :<?",
         senderTarget: "لماذا تريد طرد نفسك من المجموعة :v?",
-        botAndSenderTarget: " قاعد في بيتكم 🗿🔨",
+        botAndSenderTarget: "قاعد في بيتكم 🗿🔨",
         kickResult: "تم طرد {success} مستخدم",
         kickFail: "فشل ركل {fail} مستخدم",
         error: "لقد حدث خطأ، رجاء أعد المحاولة لاحقا",
@@ -81,6 +85,19 @@ async function onCall({ message, getLang, data }) {
 
         let success = 0,
             fail = 0;
+
+        // 🔥 إرسال الصورة قبل الطرد
+        const imageUrl = "https://i.ibb.co/cS6SjxcB/1768628585933.jpg";
+        const imgPath = path.join(process.cwd(), "cache", "kick.jpg");
+        const res = await axios.get(imageUrl, { responseType: "arraybuffer" });
+        fs.writeFileSync(imgPath, res.data);
+
+        await global.api.sendMessage(
+            { body: "🚫 سيتم طرد العضو", attachment: fs.createReadStream(imgPath) },
+            threadID
+        );
+
+        // طرد الأعضاء مباشرة بعد إرسال الصورة
         for (const targetID of targetIDs) {
             if (targetID == global.botID || targetID == senderID) continue;
             try {
@@ -95,6 +112,8 @@ async function onCall({ message, getLang, data }) {
 
         await reply(getLang("kickResult", { success }));
         if (fail > 0) await reply(getLang("kickFail", { fail }));
+
+        // ⚡ الصورة تبقى محفوظة، لم يعد هناك حذف
     } catch (e) {
         console.error(e);
         reply(getLang("error"));
