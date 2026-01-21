@@ -21,7 +21,7 @@ const langData = {
     },
     "ar_SY": {
         "notReply": "انت عيان •-•؟",
-        "notBotMessage": "يا عب دي ما رسالتي ヽʕ •͡-•ʔ⁩ノ",
+        "notBotMessage": "يا عب دي ما رسالتي •-•",
         "error": "حدث خطأ"
     }
 }
