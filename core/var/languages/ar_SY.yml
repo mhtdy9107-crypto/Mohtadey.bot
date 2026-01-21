@@ -87,8 +87,8 @@ plugins.events.unsubscribe.bot.left: "Bot غادر \"{threadName}\" ({threadId})
 plugins.events.unsubscribe.bot.kicked: "Bot تم طرده من \"{threadName}\" ({threadId}) بواسطة \"{authorName}\" ({authorId})."
 plugins.events.unsubscribe.left: "{leftName} غادر."
 plugins.events.unsubscribe.kicked: "{leftName} تم طرده."
-plugins.events.unsubscribe.antiOut.error: "[ ANTIOUT ] لا يمكن إضافة عضو مرة أخرى إلى المجموعة!"
-plugins.events.unsubscribe.antiOut.success: "[ ANTIOUT ] تمت إضافة العضو مرة أخرى إلى المجموعة!"
+plugins.events.unsubscribe.antiOut.error: "[ ANTIOUT ] لم استطيع اضافة العب مره اخرا "
+plugins.events.unsubscribe.antiOut.success: "[ ANTIOUT ] مارق بكرامتك وين يا عب يا ظنج بل بس هنا 🗿🔨!"
 
 # المكالمات
 plugins.events.thread-call.startedCall: "\"{authorName}\" ({authorId}) بدأ مكالمة."
@@ -113,4 +113,4 @@ plugins.events.thread-update.admins.removed: "\"{authorName}\" ({authorId}) أز
 plugins.events.user-nickname.changedBy: "\"{authorName}\" ({authorId}) غير لقب \"{targetName}\" ({targetId}) إلى \"{newNickname}\"."
 plugins.events.user-nickname.changedBySelf: "\"{authorName}\" ({authorId}) غير لقبه إلى \"{newNickname}\"."
 plugins.events.user-nickname.reversed: "\nلم يُسمح بتغيير اللقب، لذلك تم إرجاع اللقب القديم."
-plugins.events.user-nickname.reversed_t: "[ ANTI ALERT ] تغيير اللقب غير مسموح به لذلك تم إرجاعه!"
+plugins.events.user-nickname.reversed_t: "[ ANTI ALERT ] غير مسموح لفلاح مثلك بتغير لغبه جرب تاني حشان احشك!"
