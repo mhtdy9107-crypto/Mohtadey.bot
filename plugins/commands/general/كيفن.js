@@ -50,7 +50,7 @@ export async function onCall({ message, args }) {
 
   if (question === "مسخ" || question === "reset") {
     conversations.delete(userId);
-    return message.reply("المحادثة اتمسحت. مبسوط كدا +يا مان قول لافتك تعلمك الكتابه زي ما علمتني'-'؟");
+    return message.reply("المحادثة اتمسحت. مبسوط كدا +يا مان قول لاختك تعلمك الكتابه زي ما علمتني'-'؟");
   }
 
   if (!question) {
