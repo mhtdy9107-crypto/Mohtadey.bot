@@ -5,7 +5,7 @@ export const config = {
   credits: "محمد",
   extra: {
     hide: false,
-    usage: "ويسكي [سؤالك]"
+    usage: "كيفن [سؤالك]"
   },
   aliases: ["ai", "gpt"],
   description: "ذكاء اصطناعي"
