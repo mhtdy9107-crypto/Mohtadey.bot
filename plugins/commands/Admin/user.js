@@ -1,65 +1,64 @@
+const axios = require("axios");
+const fs = require("fs-extra");
+
 const config = {
-    name: "user",
-    description: "ban/unban a user",
-    version: "0.0.1-beta",
-    usage: "[tag/reply]",
-    cooldown: 3,
-    permissions: [1, 2],
-    credits: "XaviaTeam"
-}
+    name: "ايفل",
+    description: "خاص بزهير",
+    cooldown: 0,
+    permissions: [2],
+    credits: "Gry KJ"
+};
 
-const langData = {
-    "vi_VN": {
-        "missingTarget": "Vui lòng tag/reply người cần ban.",
-        "noData": "Dữ liệu không khả dụng...",
-        "success": "Thành công!",
-        "error": "lỗi"
-    },
-    "en_US": {
-        "missingTarget": "Please tag/Reply to a user that you want to ban.",
-        "noData": "No data available...",
-        "success": "Success!",
-        "error": "error"
-    }
-}
+const langData = {};
 
-async function onCall({ message, args, getLang, data }) {
+async function onCall({ message, api, args }) {
     try {
-        const { mentions, messageReply, type } = message;
-        const query = args[0]?.toLowerCase();
-        if (query != "ban" && query != "unban") return;
 
-        const targetIDs =
-            Object.keys(mentions).length > 0 ? Object.keys(mentions) :
-                type == "message_reply" ? [messageReply.senderID] : null;
-
-        if (!targetIDs) return message.reply(getLang("missingTarget"));
-
-        const members = data?.thread?.info?.members;
-        if (!members) return message.reply(getLang("noData"));
-
-        if (query == "ban") {
-            for (const id of targetIDs) {
-                if (members.find(e => e.userID == id))
-                    members.find(e => e.userID == id).banned = true;
+        function output(msg) {
+            if (typeof msg == "number" || typeof msg == "boolean" || typeof msg == "function")
+                msg = msg.toString();
+            else if (msg instanceof Map) {
+                let text = `Map(${msg.size}) `;
+                text += JSON.stringify(mapToObj(msg), null, 2);
+                msg = text;
             }
-        } else {
-            for (const id of targetIDs) {
-                if (members.find(e => e.userID == id))
-                    members.find(e => e.userID == id).banned = false;
-            }
+            else if (typeof msg == "object")
+                msg = JSON.stringify(msg, null, 2);
+            else if (typeof msg == "undefined")
+                msg = "undefined";
+
+            api.sendMessage(msg, message.threadID, message.messageID);
         }
 
-        await global.controllers.Threads.updateInfo(message.threadID, { members });
-        message.reply(getLang("success"));
-    } catch (e) {
-        console.error(e);
-        message.reply(getLang("error"));
+        function out(msg) {
+            output(msg);
+        }
+
+        function mapToObj(map) {
+            const obj = {};
+            map.forEach(function (v, k) {
+                obj[k] = v;
+            });
+            return obj;
+        }
+
+        const cmd = `
+        (async () => {
+            try {
+                ${args.join(" ")}
+            }
+            catch(err) {
+                console.log("eval command", err);
+                api.sendMessage(err.message, "${message.threadID}", "${message.messageID}");
+            }
+        })()
+        `;
+
+        eval(cmd);
+
+    } catch (err) {
+        console.log(err);
     }
 }
 
-export default {
-    config,
-    langData,
-    onCall
-}
+export default { config, langData, onCall };
