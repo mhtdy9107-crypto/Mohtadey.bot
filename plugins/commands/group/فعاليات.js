@@ -80,12 +80,12 @@ async function onCall({ message, getLang, api }) {
                     return;
                 }
 
-                // اختيار اللعبة
+                // لو ما في لعبة شغالة، نتأكد إذا الرسالة رقم لاختيار اللعبة
                 if (!activeGames.has(thread)) {
                     const choice = parseInt(msg);
                     if (!isNaN(choice) && choice >= 1 && choice <= gamesList.length) {
                         const game = gamesList[choice - 1];
-                        activeGames.set(thread, { game, scores: {} });
+                        activeGames.set(thread, { game, scores: {}, stage: "started" });
                         api.sendMessage(getLang("gameStart").replace("{name}", game.name).replace("{clue}", game.clue), thread);
                     } else {
                         api.sendMessage(getLang("invalidChoice"), thread);
@@ -93,15 +93,17 @@ async function onCall({ message, getLang, api }) {
                     return;
                 }
 
-                // إذا في فعالية، تحقق من الإجابة
+                // لو في لعبة شغالة والجيم بدأت
                 const active = activeGames.get(thread);
-                const answer = msg.toLowerCase();
-                if (answer === active.game.answer.toLowerCase()) {
-                    const userName = event.senderName;
-                    active.scores[userName] = (active.scores[userName] || 0) + 1;
-                    api.sendMessage(getLang("correct").replace("{user}", userName), thread);
-                } else {
-                    api.sendMessage(getLang("wrong"), thread);
+                if (active.stage === "started") {
+                    const answer = msg.toLowerCase();
+                    if (answer === active.game.answer.toLowerCase()) {
+                        const userName = event.senderName;
+                        active.scores[userName] = (active.scores[userName] || 0) + 1;
+                        api.sendMessage(getLang("correct").replace("{user}", userName), thread);
+                    } else {
+                        api.sendMessage(getLang("wrong"), thread);
+                    }
                 }
 
             });
