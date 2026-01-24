@@ -9,7 +9,7 @@ const config = {
 
 const langData = {
     "ar_SY": {
-        "chooseGame": "دي قائمة الفعاليات الأنمي:\n{list}\nرد بالرقم عشان تختار اللعبة",
+        "chooseGame": "دي قائمة الفعاليات الأنمي:\n{list}\nاكتب الرقم عشان تختار اللعبة",
         "invalidChoice": "رقم غير صالح حاول مرة تانية",
         "gameStart": "اللعبة {name} بدأت! أول واحد يجاوب صح ياخد ✅\n{clue}",
         "correct": "✅ صح! {user} كسب نقطة",
@@ -33,70 +33,77 @@ const gamesList = [
     { name: "مقولة مشهورة", clue: "من لا يستطيع القتال ليس له مكان في الجيش", answer: "ليفي" }
 ];
 
-let activeGame = null;
+// خريطة لتخزين كل فعالية حسب الجروب
+let activeGames = new Map();
 let listenerAdded = false;
-let lastMessageID = null; // لتخزين رسالة اللعبة
 
 async function onCall({ message, getLang, api }) {
     try {
-        // عرض قائمة الألعاب لو ما في فعالية
-        if (!activeGame) {
+        const threadID = message.threadID;
+
+        // لو ما في فعالية شغالة للجروب الحالي، اعرض القائمة
+        if (!activeGames.has(threadID)) {
             const list = gamesList.map((g, i) => `${i + 1}. ${g.name}`).join("\n");
-            const msg = await message.reply(getLang("chooseGame").replace("{list}", list));
-            lastMessageID = msg.messageID; // نخزن ID الرسالة
+            await message.reply(getLang("chooseGame").replace("{list}", list));
         }
 
+        // listener عام مرة واحدة
         if (!listenerAdded) {
             listenerAdded = true;
             api.listenMessage(async (event) => {
                 if (!event.body) return;
 
+                const thread = event.threadID;
                 const msg = event.body.trim();
-
-                // فقط الردود على رسالة البوت
-                if (!event.messageReply || event.messageReply.messageID !== lastMessageID) return;
 
                 // إنهاء اللعبة
                 if (msg.toLowerCase() === "خلاص") {
-                    if (!activeGame) return api.sendMessage(getLang("noActiveGame"), event.threadID);
+                    if (!activeGames.has(thread)) return api.sendMessage(getLang("noActiveGame"), thread);
 
-                    let scoresEntries = Object.entries(activeGame.scores);
+                    const active = activeGames.get(thread);
+                    let scoresEntries = Object.entries(active.scores);
+
                     let winner = "لا أحد";
                     if (scoresEntries.length > 0) {
                         scoresEntries.sort((a, b) => b[1] - a[1]);
                         const topScore = scoresEntries[0][1];
-                        const topPlayers = scoresEntries.filter(([id, pts]) => pts === topScore);
-                        winner = topPlayers.map(([id]) => id).join(", ");
+                        const topPlayers = scoresEntries.filter(([_, pts]) => pts === topScore);
+                        winner = topPlayers.map(([name]) => name).join(", ");
                     }
-                    let scoresText = scoresEntries.map(([id, pts]) => `${id}: ${pts} نقطة`).join("\n") || "لا أحد كسب نقاط";
-                    api.sendMessage(getLang("gameEnded").replace("{winner}", winner).replace("{scores}", scoresText), event.threadID);
-                    activeGame = null;
+
+                    let scoresText = scoresEntries
+                        .sort((a,b)=> b[1]-a[1])
+                        .map(([name, pts]) => `${name}: ${pts} نقطة`).join("\n") || "لا أحد كسب نقاط";
+
+                    api.sendMessage(getLang("gameEnded").replace("{winner}", winner).replace("{scores}", scoresText), thread);
+                    activeGames.delete(thread);
                     return;
                 }
 
-                // اختيار اللعبة لو ما في فعالية
-                if (!activeGame) {
+                // اختيار اللعبة
+                if (!activeGames.has(thread)) {
                     const choice = parseInt(msg);
                     if (!isNaN(choice) && choice >= 1 && choice <= gamesList.length) {
                         const game = gamesList[choice - 1];
-                        activeGame = { game, scores: {} };
-                        const startMsg = await api.sendMessage(getLang("gameStart").replace("{name}", game.name).replace("{clue}", game.clue), event.threadID);
-                        lastMessageID = startMsg.messageID; // نخزن رسالة بدء اللعبة
+                        activeGames.set(thread, { game, scores: {} });
+                        api.sendMessage(getLang("gameStart").replace("{name}", game.name).replace("{clue}", game.clue), thread);
                     } else {
-                        api.sendMessage(getLang("invalidChoice"), event.threadID);
+                        api.sendMessage(getLang("invalidChoice"), thread);
                     }
                     return;
                 }
 
                 // إذا في فعالية، تحقق من الإجابة
+                const active = activeGames.get(thread);
                 const answer = msg.toLowerCase();
-                if (answer === activeGame.game.answer.toLowerCase()) {
-                    const userId = event.senderID;
-                    activeGame.scores[userId] = (activeGame.scores[userId] || 0) + 1;
-                    api.sendMessage(getLang("correct").replace("{user}", event.senderName), event.threadID);
+                if (answer === active.game.answer.toLowerCase()) {
+                    const userName = event.senderName;
+                    active.scores[userName] = (active.scores[userName] || 0) + 1;
+                    api.sendMessage(getLang("correct").replace("{user}", userName), thread);
                 } else {
-                    api.sendMessage(getLang("wrong"), event.threadID);
+                    api.sendMessage(getLang("wrong"), thread);
                 }
+
             });
         }
 
