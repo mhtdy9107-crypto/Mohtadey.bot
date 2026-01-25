@@ -26,7 +26,7 @@ const langData = {
 
 // رابط الصورة
 const KICK_IMAGE =
-    "https://i.ibb.co/PJK2n1N/Messenger-creation-2-DBBF1-E2-3696-464-A-BA72-D62-B034-DA8-F1.jpg";
+    "https://i.ibb.co/wZDHSMvM/received-897009799489398.jpg ";
 
 // ===== إرسال الصورة =====
 async function sendKickImage(threadID) {
