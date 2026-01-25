@@ -7,6 +7,9 @@ const config = {
     credits: "ᏕᎥᏁᎨᎧ",
 };
 
+const IMAGE_URL =
+    "https://i.ibb.co/wZDHSMvM/received-897009799489398.jpg";
+
 const langData = {
     en_US: {
         missingTarget: "Please tag or reply message of user to kick",
@@ -32,12 +35,12 @@ const langData = {
         error: "Đã có lỗi xảy ra, vui lòng thử lại sau",
     },
     ar_SY: {
-        missingTarget: "تاق منشى 🗿🔨",
-        botNotAdmin: "ارفع ادمن اولا  ꪔ̤̱",
-        botTarget: "لماذا تريد طرد البوت من المجموعة :<?",
+        missingTarget: "اعمل تاق لعب 🐸💔",
+        botNotAdmin:" وزع انا ما ادمن ",
+        botTarget: "يا عب ما بتقدر تطردني 🐸",
         senderTarget: "لماذا تريد طرد نفسك من المجموعة :v?",
         botAndSenderTarget: " قاعد في بيتكم 🗿🔨",
-        kickResult: "تم طرد {success} مستخدم",
+        kickResult: "كان رقاصه 🐸 {success} مستخدم",
         kickFail: "فشل ركل {fail} مستخدم",
         error: "لقد حدث خطأ، رجاء أعد المحاولة لاحقا",
     },
@@ -52,15 +55,32 @@ function kick(userID, threadID) {
     });
 }
 
+function sendImage(threadID) {
+    return new Promise((resolve, reject) => {
+        global.api.sendMessage(
+            {
+                attachment: global.utils.getStreamFromURL(IMAGE_URL),
+            },
+            threadID,
+            (err) => {
+                if (err) return reject(err);
+                resolve();
+            }
+        );
+    });
+}
+
 async function onCall({ message, getLang, data }) {
     if (!message.isGroup) return;
     const { threadID, mentions, senderID, messageReply, type, reply } = message;
+
     try {
         if (Object.keys(mentions).length == 0 && type != "message_reply")
             return reply(getLang("missingTarget"));
 
         const threadInfo = data.thread.info;
         const { adminIDs } = threadInfo;
+
         const targetIDs =
             Object.keys(mentions).length > 0
                 ? Object.keys(mentions)
@@ -81,11 +101,19 @@ async function onCall({ message, getLang, data }) {
 
         let success = 0,
             fail = 0;
+
         for (const targetID of targetIDs) {
             if (targetID == global.botID || targetID == senderID) continue;
+
             try {
+                // إرسال الصورة قبل الطرد
+                await sendImage(threadID);
+                await global.utils.sleep(700);
+
+                // الطرد
                 await kick(targetID, threadID);
                 await global.utils.sleep(500);
+
                 success++;
             } catch (e) {
                 console.error(e);
