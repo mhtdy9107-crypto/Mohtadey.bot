@@ -7,9 +7,6 @@ const config = {
     credits: "ᏕᎥᏁᎨᎧ",
 };
 
-const IMAGE_URL =
-    "https://i.ibb.co/wZDHSMvM/received-897009799489398.jpg";
-
 const langData = {
     en_US: {
         missingTarget: "Please tag or reply message of user to kick",
@@ -55,23 +52,6 @@ function kick(userID, threadID) {
     });
 }
 
-// ✅ التعديل الوحيد هنا
-async function sendImage(threadID) {
-    const stream = await global.utils.getStreamFromURL(IMAGE_URL);
-    return new Promise((resolve, reject) => {
-        global.api.sendMessage(
-            {
-                attachment: stream,
-            },
-            threadID,
-            (err) => {
-                if (err) return reject(err);
-                resolve();
-            }
-        );
-    });
-}
-
 async function onCall({ message, getLang, data }) {
     if (!message.isGroup) return;
     const { threadID, mentions, senderID, messageReply, type, reply } = message;
@@ -101,21 +81,22 @@ async function onCall({ message, getLang, data }) {
         )
             return reply(getLang("botAndSenderTarget"));
 
+        // 🔥 إرسال الصورة قبل الطرد
+        await reply({
+            body: "⚠️ تم اتخاذ قرار الطرد",
+            attachment: await global.utils.getStreamFromURL(
+                "https://i.ibb.co/wZDHSMvM/received-897009799489398.jpg"
+            ),
+        });
+
         let success = 0,
             fail = 0;
 
         for (const targetID of targetIDs) {
             if (targetID == global.botID || targetID == senderID) continue;
-
             try {
-                // إرسال الصورة قبل الطرد
-                await sendImage(threadID);
-                await global.utils.sleep(700);
-
-                // الطرد
                 await kick(targetID, threadID);
                 await global.utils.sleep(500);
-
                 success++;
             } catch (e) {
                 console.error(e);
