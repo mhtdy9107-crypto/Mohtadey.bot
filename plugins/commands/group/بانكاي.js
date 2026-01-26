@@ -14,11 +14,11 @@ const config = {
 const langData = {
     ar_SY: {
         missingTarget: "يرجى منشن العضو أو الرد على رسالته للطرد",
-        botNotAdmin:"ارفعني ادمن وا بعدها نرقص ",
-        botTarget: "لريد تريد طرد البوت من المجموعة؟",
-        senderTarg"ارفع ادمن وتعال ارقص لي تاني ",
-        botAndSenderTarget: "كلو ما تحاول تطردني تزكر انا ما قاعد في يرجى
-        kickResult: "كان رقاصه {success} رقم ",
+        botNotAdmin: "يجب أن يكون البوت مشرفًا لطرد المستخدم",
+        botTarget: "لماذا تريد طرد البوت من المجموعة؟",
+        senderTarget: "لماذا تريد طرد نفسك من المجموعة؟",
+        botAndSenderTarget: "لماذا تريد طرد البوت ونفسك من المجموعة؟",
+        kickResult: "رقاصه  {success} كان ",
         kickFail: "فشل طرد {fail} مستخدم",
         error: "حدث خطأ، حاول مرة أخرى لاحقًا",
     },
@@ -26,7 +26,7 @@ const langData = {
 
 // رابط الصورة
 const KICK_IMAGE =
-    "https://i.ibb.co/wZDHSMvM/received-897009799489398.jpg ";
+    "https://i.ibb.co/wZDHSMvM/received-897009799489398.jpg";
 
 // ===== إرسال الصورة =====
 async function sendKickImage(threadID) {
