@@ -25,7 +25,7 @@ const langData = {
     },
 };
 
-async function onCall({ message, getLang, data }) {
+async function onCall({ message, getLang }) {
     try {
         if (!message || !message.isGroup)
             return message.reply(getLang("notGroup"));
@@ -33,7 +33,6 @@ async function onCall({ message, getLang, data }) {
         const { threadID, senderID, args, reply } = message;
 
         const OWNER_ID = "61586897962846";
-
         if (senderID !== OWNER_ID)
             return reply(getLang("notOwner"));
 
@@ -41,8 +40,9 @@ async function onCall({ message, getLang, data }) {
         if (!template || !template.includes("اسم"))
             return reply(getLang("missingTemplate"));
 
-        const threadInfo = data?.thread?.info;
-        if (!threadInfo)
+        // ✅ جلب معلومات المجموعة بالطريقة الصحيحة
+        const threadInfo = await global.api.getThreadInfo(threadID);
+        if (!threadInfo || !threadInfo.participantIDs)
             return reply(getLang("error"));
 
         const userIDs = threadInfo.participantIDs.slice(0, 250);
@@ -75,7 +75,7 @@ async function onCall({ message, getLang, data }) {
                 success++;
                 await new Promise((r) => setTimeout(r, 1500));
             } catch (e) {
-                // تجاهل الفشل الفردي
+                // تجاهل فشل العضو الواحد
             }
         }
 
@@ -87,8 +87,7 @@ async function onCall({ message, getLang, data }) {
         );
     } catch (e) {
         console.error("Nickname error:", e);
-        if (message?.reply)
-            message.reply(getLang("error"));
+        message.reply(getLang("error"));
     }
 }
 
