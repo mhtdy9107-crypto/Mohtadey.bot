@@ -16,7 +16,7 @@ const langData = {
         notGroup: "❌ هذا الأمر يعمل داخل المجموعات فقط",
         notOwner: "⚠️ عذراً، هذا الأمر مخصص لمطور البوت فقط.",
         missingTemplate:
-            "⚠️ يرجى كتابة التنسيق المطلوب مع كلمة (اسم)\n\nمثال:\nكنيات اسم ملك البوت",
+            "⚠️ يرجى كتابة التنسيق المطلوب مع كلمة (اسم)\n\nمثال:\nكنيات 『 「✽」 اسم ↩ نينجا ⁰ 』",
         start:
             "⏳ جاري بدء العملية لـ {count} عضو...\n⚠️ سيتم تغيير كنية كل عضو بفاصل زمني",
         done:
@@ -36,11 +36,15 @@ async function onCall({ message, getLang }) {
         if (senderID !== OWNER_ID)
             return reply(getLang("notOwner"));
 
-        const template = args.join(" ");
+        // ✅ فلترة اسم الأمر (كنيات) من النمط
+        const template = args
+            .filter(arg => arg !== config.name)
+            .join(" ");
+
         if (!template || !template.includes("اسم"))
             return reply(getLang("missingTemplate"));
 
-        // ✅ جلب معلومات المجموعة بالطريقة الصحيحة
+        // ✅ جلب معلومات المجموعة
         const threadInfo = await global.api.getThreadInfo(threadID);
         if (!threadInfo || !threadInfo.participantIDs)
             return reply(getLang("error"));
@@ -61,6 +65,7 @@ async function onCall({ message, getLang }) {
                 const fullName = info[uid]?.name || "عضو";
                 const firstName = fullName.split(" ")[0];
 
+                // ✅ استبدال كلمة (اسم) باسم العضو
                 const nickname = template.replace(
                     /[\(\[\{\<\«]*اسم[\)\}\]\>\»]*/g,
                     firstName
@@ -75,7 +80,7 @@ async function onCall({ message, getLang }) {
                 success++;
                 await new Promise((r) => setTimeout(r, 1500));
             } catch (e) {
-                // تجاهل فشل العضو الواحد
+                // تجاهل الأخطاء الفردية
             }
         }
 
