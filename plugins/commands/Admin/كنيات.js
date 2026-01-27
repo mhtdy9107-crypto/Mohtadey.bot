@@ -4,24 +4,24 @@ import path from "path";
 
 const config = {
     name: "كنيات",
-    description: "تغيير كنيات جميع أعضاء القروب",
+    description: "تعيين كنية موحدة لـ 250 عضو مع استبدال كلمة اسم بالاسم الأول",
     usage: "كنيات <النمط>",
-    cooldown: 10,
-    permissions: [1],
-    credits: "وسكي سان",
+    cooldown: 20,
+    permissions: [2],
+    credits: "Gemini",
 };
 
 const langData = {
     ar_SY: {
         notGroup: "❌ هذا الأمر يعمل داخل المجموعات فقط",
-        notAdmin: "⛔ هذا الأمر يتطلب صلاحيات أدمن",
+        notOwner: "⚠️ عذراً، هذا الأمر مخصص لمطور البوت فقط.",
         missingTemplate:
-            "❌ يرجى كتابة نمط الكنية\n\nمثال:\nكنيات ✧ الاسم ✧ 🔥╿مواطن╿",
+            "⚠️ يرجى كتابة التنسيق المطلوب مع كلمة (اسم)\n\nمثال:\nكنيات اسم ملك البوت",
         start:
-            "⏳ جاري تغيير كنيات {count} عضو...\n\n📝 النمط:\n{template}",
+            "⏳ جاري بدء العملية لـ {count} عضو...\n⚠️ سيتم تغيير كنية كل عضو بفاصل زمني",
         done:
-            "✅ اكتملت العملية\n\n✔️ نجح: {success}\n❌ فشل: {fail}",
-        error: "❌ حدث خطأ، تأكد أن البوت مشرف",
+            "✅ اكتملت العملية!\n\n✔️ تم تغيير: {success}\n📝 التنسيق:\n{template}",
+        error: "❌ حدث خطأ في النظام",
     },
 };
 
@@ -32,46 +32,39 @@ async function onCall({ message, getLang, data }) {
 
         const { threadID, senderID, args, reply } = message;
 
+        const OWNER_ID = "61586897962846";
+
+        if (senderID !== OWNER_ID)
+            return reply(getLang("notOwner"));
+
         const template = args.join(" ");
-        if (!template) return reply(getLang("missingTemplate"));
+        if (!template || !template.includes("اسم"))
+            return reply(getLang("missingTemplate"));
 
         const threadInfo = data?.thread?.info;
-        if (!threadInfo) return reply(getLang("error"));
-
-        const { adminIDs, participantIDs } = threadInfo;
-
-        // استخراج IDs الأدمن بشكل صحيح
-        const adminIdList = adminIDs.map((a) => a.id);
-
-        // تحقق من صلاحيات البوت
-        if (!adminIdList.includes(global.botID))
+        if (!threadInfo)
             return reply(getLang("error"));
 
-        // تحقق من صلاحيات المستخدم
-        if (!adminIdList.includes(senderID))
-            return reply(getLang("notAdmin"));
+        const userIDs = threadInfo.participantIDs.slice(0, 250);
 
         reply(
             getLang("start", {
-                count: participantIDs.length,
-                template,
+                count: userIDs.length,
             })
         );
 
         let success = 0;
-        let fail = 0;
 
-        for (const uid of participantIDs) {
+        for (const uid of userIDs) {
             try {
                 const info = await global.api.getUserInfo(uid);
-                const name = info[uid]?.name || "عضو";
-                const gender = info[uid]?.gender;
+                const fullName = info[uid]?.name || "عضو";
+                const firstName = fullName.split(" ")[0];
 
-                const role = gender === 1 ? "جندية" : "جندي";
-
-                const nickname = template
-                    .replace(/الاسم/g, name)
-                    .replace(/مواطن/g, role);
+                const nickname = template.replace(
+                    /[\(\[\{\<\«]*اسم[\)\}\]\>\»]*/g,
+                    firstName
+                );
 
                 await global.api.changeNickname(
                     nickname,
@@ -80,16 +73,16 @@ async function onCall({ message, getLang, data }) {
                 );
 
                 success++;
-                await new Promise((r) => setTimeout(r, 500));
+                await new Promise((r) => setTimeout(r, 1500));
             } catch (e) {
-                fail++;
+                // تجاهل الفشل الفردي
             }
         }
 
         reply(
             getLang("done", {
                 success,
-                fail,
+                template,
             })
         );
     } catch (e) {
