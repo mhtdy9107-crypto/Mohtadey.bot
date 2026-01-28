@@ -1,16 +1,11 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
-
-/* ================= FIX DIRNAME ================= */
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /* ================= CONFIG ================= */
 const config = {
     name: "قبيلة",
     description: "نظام قبائل وتجاره جاهلية ممتع 🔥",
-    usage: "قبيلة | قبيلة خمر | قبيلة مجلس | قبيلة خيمة | قبيلة جارية | قبيلة جواري | قبيلة دعوة",
+    usage: "قبيلة خمر | مجلس | خيمة | جارية | جواري | دعوة",
     cooldown: 5,
     permissions: [0],
     credits: "🔥 Whisky x Gemini",
@@ -25,7 +20,7 @@ const langData = {
 };
 
 /* ================= DATA ================= */
-const dataPath = path.join(__dirname, "tribal_data.json");
+const dataPath = path.join(process.cwd(), "tribal_data.json");
 
 const WINE_TYPES = {
     عادي: { price: 10000, profit: 1.3, time: 2, emoji: "🏺" },
@@ -63,21 +58,20 @@ function initUser(id, data) {
 }
 
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
-const fmt = (n) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+const fmt = (n) => n.toLocaleString();
 
 /* ================= FEATURES ================= */
 
-// 🍷 صناعة خمر
-async function makeWine(uid, amount, type, data, message) {
+async function makeWine(uid, amount, type, data, reply) {
     if (!amount || !type)
-        return message.reply("❌ الاستخدام: قبيلة خمر <الكمية> <النوع>");
+        return reply("❌ الاستخدام: قبيلة خمر <الكمية> <النوع>");
 
     const user = initUser(uid, data);
     const wine = WINE_TYPES[type];
-    if (!wine) return message.reply("❌ النوع: عادي | قديم | فاخر");
+    if (!wine) return reply("❌ النوع: عادي | قديم | فاخر");
 
     const cost = wine.price * amount;
-    if (user.gold < cost) return message.reply("💰 ذهبك ما يكفي");
+    if (user.gold < cost) return reply("💰 ذهبك ما يكفي");
 
     user.gold -= cost;
     user.wine.fermenting.push({
@@ -87,11 +81,10 @@ async function makeWine(uid, amount, type, data, message) {
     });
 
     saveData(data);
-    message.reply(`${wine.emoji} بدأت تخمير ${amount} خمر ${type}`);
+    reply(`${wine.emoji} بدأت تخمير ${amount} خمر ${type}`);
 }
 
-// 🏺 فتح مجلس
-async function openMajlis(uid, data, message) {
+async function openMajlis(uid, data, reply) {
     const user = initUser(uid, data);
     const now = Date.now();
 
@@ -118,32 +111,28 @@ async function openMajlis(uid, data, message) {
     user.stats.earnings += profit;
 
     saveData(data);
-    message.reply(`🍷 المجلس اشتغل\n💰 الربح: ${fmt(profit)}`);
+    reply(`🍷 المجلس اشتغل\n💰 الربح: ${fmt(profit)}`);
 }
 
-// 🧕 شراء جارية
-async function buySlave(uid, lvl, data, message) {
-    if (!lvl)
-        return message.reply("❌ الاستخدام: قبيلة جارية <1|2|3>");
+async function buySlave(uid, lvl, data, reply) {
+    if (!lvl) return reply("❌ الاستخدام: قبيلة جارية <1|2|3>");
 
     const user = initUser(uid, data);
     const s = SLAVES[lvl];
-    if (!s) return message.reply("❌ المستوى 1 أو 2 أو 3");
+    if (!s) return reply("❌ المستوى 1 أو 2 أو 3");
 
-    if (user.gold < s.price) return message.reply("💰 ما عندك ذهب");
+    if (user.gold < s.price) return reply("💰 ما عندك ذهب");
 
     user.gold -= s.price;
     user.slaves.push({ level: lvl });
 
     saveData(data);
-    message.reply(`${s.emoji} اشتريت جارية مستوى ${lvl}`);
+    reply(`${s.emoji} اشتريت جارية مستوى ${lvl}`);
 }
 
-// 🔥 تشغيل الخيمة
-async function openTent(uid, data, message) {
+async function openTent(uid, data, reply) {
     const user = initUser(uid, data);
-    if (!user.slaves.length)
-        return message.reply("❌ ما عندك جواري");
+    if (!user.slaves.length) return reply("❌ ما عندك جواري");
 
     let profit = 0;
     user.slaves.forEach(
@@ -155,28 +144,24 @@ async function openTent(uid, data, message) {
     user.stats.earnings += profit;
 
     saveData(data);
-    message.reply(`🔥 الخيمة اشتغلت\n💰 الربح: ${fmt(profit)}`);
+    reply(`🔥 الخيمة اشتغلت\n💰 الربح: ${fmt(profit)}`);
 }
 
-// 📋 عرض الجواري
-async function listSlaves(uid, data, message) {
+async function listSlaves(uid, data, reply) {
     const user = initUser(uid, data);
-    if (!user.slaves.length)
-        return message.reply("❌ ما عندك جواري");
+    if (!user.slaves.length) return reply("❌ ما عندك جواري");
 
     let txt = "🧕 جواريك:\n";
     user.slaves.forEach(
-        (s, i) =>
-            (txt += `#${i + 1} مستوى ${s.level} ${SLAVES[s.level].emoji}\n`)
+        (s, i) => (txt += `#${i + 1} مستوى ${s.level} ${SLAVES[s.level].emoji}\n`)
     );
-    message.reply(txt);
+    reply(txt);
 }
 
-// 🎉 دعوة
-async function invite(uid, data, message) {
+async function invite(uid, data, reply) {
     const user = initUser(uid, data);
     if (Date.now() - user.lastInvite < 4 * 60 * 60 * 1000)
-        return message.reply("⏳ انتظر 4 ساعات قبل الدعوة");
+        return reply("⏳ انتظر 4 ساعات قبل الدعوة");
 
     user.lastInvite = Date.now();
     const profit = rand(20000, 60000);
@@ -185,13 +170,12 @@ async function invite(uid, data, message) {
     user.stats.earnings += profit;
 
     saveData(data);
-    message.reply(`🎉 تمت الدعوة\n💰 ربح: ${fmt(profit)}`);
+    reply(`🎉 تمت الدعوة\n💰 ربح: ${fmt(profit)}`);
 }
 
-// 📊 الحالة
-async function showStats(uid, data, message) {
+async function showStats(uid, data, reply) {
     const user = initUser(uid, data);
-    message.reply(
+    reply(
         `🏜️ قبيلتك\n💰 الذهب: ${fmt(user.gold)}\n📊 الأرباح: ${fmt(
             user.stats.earnings
         )}`
@@ -204,31 +188,33 @@ async function onCall({ message, getLang }) {
         if (!message.isGroup)
             return message.reply(getLang("notGroup"));
 
-        const { senderID, args } = message;
+        const { senderID, args, reply } = message;
         const data = loadData();
-        const sub = args[0];
+
+        // ✅ نفس منطق كود (كنيات)
+        const sub = args[1];
 
         switch (sub) {
             case "خمر":
                 return makeWine(
                     senderID,
-                    parseInt(args[1]),
-                    args[2],
+                    parseInt(args[2]),
+                    args[3],
                     data,
-                    message
+                    reply
                 );
             case "مجلس":
-                return openMajlis(senderID, data, message);
+                return openMajlis(senderID, data, reply);
             case "جارية":
-                return buySlave(senderID, parseInt(args[1]), data, message);
+                return buySlave(senderID, parseInt(args[2]), data, reply);
             case "جواري":
-                return listSlaves(senderID, data, message);
+                return listSlaves(senderID, data, reply);
             case "خيمة":
-                return openTent(senderID, data, message);
+                return openTent(senderID, data, reply);
             case "دعوة":
-                return invite(senderID, data, message);
+                return invite(senderID, data, reply);
             default:
-                return showStats(senderID, data, message);
+                return showStats(senderID, data, reply);
         }
     } catch (e) {
         console.error(e);
