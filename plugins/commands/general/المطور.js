@@ -1,55 +1,51 @@
-import axios from "axios";
-import fs from "fs";
-import path from "path";
+/**
+ * @تحسين وتطوير: ᎠᎯᏁᎢᎬᏚᎮᎯᏒᎠᎯ
+ * @النسخة: V7.0.0 [ULTRA]
+ * @الوصف: كود عرض معلومات المطور والبوت بتنسيق فخم
+ */
 
 const config = {
     name: "المطور",
-    description: "عرض معلومات مطور البوت مع صورة",
+    description: "عرض معلومات مطور نظام ڪايࢪوس",
     usage: "المطور",
     cooldown: 5,
     permissions: [0],
-    credits: "ابو عبيده علي",
+    credits: "Ꮥ.ᎥᏁᎨᎧᎯᏴᎨᏟᎻᎥᎯᎶᎯ",
 };
 
 const langData = {
     ar_SY: {
         info:
-`👑 معلومات مطور البوت 👑
+` 
+         ✧ كيفن | Ꮥ.ᎥᏁᎨᎧ ✧
 
-👤 الاسم : ابو عبيده علي
-💻 الدور : مطور البوت
-🌍 الدولة : السودان
-🛠️ الخبرة : JavaScript • Node.js • Bots
-🤖 نوع البوت : إدارة / ترفيه
+   ⊹ الــبادئة:<-> 
+   ⊹ الـخـوادم: نشط في المجموعات
+الــــــمطوࢪ
+   ⊹ الـــمطوࢪ: Ꮥ.ᎥᏁᎨᎧᎯᏴᎨᏟᎻᎥᎯᎶᎯ
+    الـعـمـر: 17 
 
-📞 للتواصل:
-🔹 فيسبوك : https://www.facebook.com/profile.php?id=61586897962846
+    الـتـواصـل الـرسـمـي
+   
+    فـيـسـبـوك:
+   https://www.facebook.com/profile.php?id=61586897962846
 
-
-✨ شكراً لاستخدامك البوت ✨`,
-        error: "❌ حدث خطأ أثناء إرسال معلومات المطور",
+  ........................... 
+  . 
+    `
     },
 };
 
 async function onCall({ message, getLang }) {
     try {
-        const imgUrl = "https://i.ibb.co/wZDHSMvM/received-897009799489398.jpg"; // 🔁 غير الرابط لصورتك
-        const imgPath = path.join(process.cwd(), "cache", "developer.jpg");
+        const { threadID } = message;
 
-        // تحميل الصورة
-        const res = await axios.get(imgUrl, { responseType: "arraybuffer" });
-        fs.writeFileSync(imgPath, res.data);
-
-        // إرسال صورة + رسالة
-        await message.reply({
-            body: getLang("info"),
-            attachment: fs.createReadStream(imgPath),
-        });
-
-        fs.unlinkSync(imgPath);
+        return global.api.sendMessage(
+            getLang("info"),
+            threadID
+        );
     } catch (e) {
-        console.error("Developer command error:", e);
-        message.reply(getLang("error"));
+        console.error("Developer info error:", e);
     }
 }
 
