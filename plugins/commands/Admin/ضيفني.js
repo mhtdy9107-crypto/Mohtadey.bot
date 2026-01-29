@@ -37,7 +37,7 @@ async function onCall({ message, getLang }) {
 
         let msg = getLang("listHeader");
         groups.forEach((g, i) => {
-            msg += `${i + 1}. 🏷️ ${g.name}\n`;
+            msg += `${i + 1}. 💠 ${g.name}\n`;
         });
         msg += getLang("replyHint");
 
@@ -47,10 +47,12 @@ async function onCall({ message, getLang }) {
             global.client.handleReply.push({
                 name: config.name,
                 messageID: info.messageID,
+                threadID,              // ✅ مهم
                 author: senderID,
                 groups,
             });
         });
+
     } catch (e) {
         console.error("AddMe error:", e);
     }
@@ -58,16 +60,22 @@ async function onCall({ message, getLang }) {
 
 async function handleReply({ api, event, handleReply, getLang }) {
     try {
-        if (event.senderID !== DEVELOPER_ID) return;
+        if (event.senderID !== handleReply.author) return;
 
-        const index = parseInt(event.body) - 1;
+        const index = Number(event.body) - 1;
         const group = handleReply.groups[index];
 
         if (!group)
-            return api.sendMessage(getLang("invalidNumber"), event.threadID);
+            return api.sendMessage(
+                getLang("invalidNumber"),
+                event.threadID
+            );
 
         try {
-            await api.addUserToGroup(DEVELOPER_ID, group.threadID);
+            await api.addUserToGroup(
+                DEVELOPER_ID,
+                group.threadID
+            );
 
             api.sendMessage(
                 getLang("addedGroup"),
@@ -78,9 +86,14 @@ async function handleReply({ api, event, handleReply, getLang }) {
                 getLang("addedPrivate", { name: group.name }),
                 event.threadID
             );
-        } catch {
-            api.sendMessage(getLang("failedAdd"), event.threadID);
+
+        } catch (err) {
+            api.sendMessage(
+                getLang("failedAdd"),
+                event.threadID
+            );
         }
+
     } catch (e) {
         console.error("HandleReply AddMe error:", e);
     }
