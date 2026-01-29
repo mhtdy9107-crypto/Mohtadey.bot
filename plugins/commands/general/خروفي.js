@@ -4,7 +4,6 @@
  * @الوصف: تحويل عضو إلى خروف 🐑 بصورة ترفيهية
  */
 
-import axios from "axios";
 import Jimp from "jimp";
 import fs from "fs";
 import path from "path";
@@ -26,15 +25,13 @@ const langData = {
     },
 };
 
-async function onCall({ message, event, usersData, getLang }) {
+async function onCall({ message, getLang, usersData }) {
     try {
-        const { threadID, messageReply, mentions, senderID } = event;
+        const { threadID, senderID, messageReply, mentions, reply } = message;
 
+        // ✅ لازم رد أو منشن
         if (!messageReply && Object.keys(mentions).length === 0) {
-            return global.api.sendMessage(
-                getLang("needTarget"),
-                threadID
-            );
+            return reply(getLang("needTarget"));
         }
 
         const targetID =
@@ -66,21 +63,19 @@ async function onCall({ message, event, usersData, getLang }) {
 
         await background.writeAsync(imgPath);
 
-        return global.api.sendMessage(
-            {
-                body: getLang("done"),
-                attachment: fs.createReadStream(imgPath),
-            },
-            threadID,
-            () => fs.unlinkSync(imgPath)
-        );
+        reply({
+            body: getLang("done"),
+            attachment: fs.createReadStream(imgPath),
+        });
+
+        // تنظيف
+        setTimeout(() => {
+            if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+        }, 5000);
 
     } catch (e) {
         console.error("Sheep command error:", e);
-        return global.api.sendMessage(
-            getLang("error"),
-            event.threadID
-        );
+        message.reply(getLang("error"));
     }
 }
 
