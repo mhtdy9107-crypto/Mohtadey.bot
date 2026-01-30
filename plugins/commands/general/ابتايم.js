@@ -1,31 +1,41 @@
-import os from "os";
+import * as os from "node:os";
 
 const config = {
     name: "uptime",
     aliases: ["upt", "status", "sys"],
-    credits: "Ꮥ.ᎥᏁᎨᎧᎯᏴᎨᏟᎻᎥᎯᎶᎯ"
+    credits: "XaviaTeam"
 };
 
+// دالة تحويل الوقت (بديل آمن)
+function msToHMS(ms) {
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    return `${h}h ${m}m ${sec}s`;
+}
+
 async function onCall({ message }) {
-    // رسالة مؤقتة
-    const loadingMsg = await message.reply("⏳ Getting uptime information...");
+    try {
+        const loadingMsg = await message.reply("⏳ Getting uptime information...");
 
-    const start = Date.now();
+        const start = Date.now();
 
-    const uptime = global.msToHMS(process.uptime() * 1000);
+        const uptime = msToHMS(process.uptime() * 1000);
 
-    const totalRam = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
-    const usedRam = ((os.totalmem() - os.freemem()) / 1024 / 1024 / 1024).toFixed(2);
+        const totalRam = (os.totalmem() / 1024 ** 3).toFixed(2);
+        const usedRam = ((os.totalmem() - os.freemem()) / 1024 ** 3).toFixed(2);
 
-    const cpuModel = os.cpus()[0].model;
-    const cpuCores = os.cpus().length;
+        const cpu = os.cpus();
+        const cpuModel = cpu[0]?.model || "Unknown";
+        const cpuCores = cpu.length;
 
-    const platform = os.platform();
-    const nodeVersion = process.version;
+        const platform = os.platform();
+        const nodeVersion = process.version;
 
-    const ping = Date.now() - start;
+        const ping = Date.now() - start;
 
-    const text = `
+        const text = `
 ╭─── ⏳ SYSTEM UPTIME ───╮
 │
 │ ⏱️ Uptime   : ${uptime}
@@ -41,10 +51,13 @@ async function onCall({ message }) {
 │ 🟢 Node.js  : ${nodeVersion}
 │
 ╰─────────── ✦ ───────────╯
-    `.trim();
+        `.trim();
 
-    // تعديل نفس الرسالة
-    await loadingMsg.edit(text);
+        await loadingMsg.edit(text);
+    } catch (err) {
+        console.error("Uptime command error:", err);
+        await message.reply("❌ حصل خطأ أثناء تنفيذ الأمر.");
+    }
 }
 
 export default {
