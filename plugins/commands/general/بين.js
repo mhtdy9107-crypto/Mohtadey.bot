@@ -8,7 +8,7 @@ const config = {
     category: "بحث",
     cooldown: 5,
     permissions: [0, 1, 2],
-    credits: "XaviaTeam"
+    credits: "Ꮥ.ᎥᏁᎨᎧᎯᏴᎨᏟᎻᎥᎯᎶᎯ"
 };
 
 async function onCall({ message, args }) {
@@ -24,42 +24,25 @@ async function onCall({ message, args }) {
         }
 
         const query = args.join(" ");
-        await message.reply(`🔍 جاري البحث عن: ${query} ...`);
+        await message.reply(`🔍 بفتش ليك عن: ${query} ...`);
 
-        const params = {
-            data: JSON.stringify({
-                options: {
-                    query,
-                    scope: "pins",
-                    page_size: 200
-                },
-                context: {}
-            }),
-            _: Date.now()
-        };
-
+        // API بديل شغال
         const { data } = await axios.get(
-            "https://www.pinterest.com/resource/BaseSearchResource/get/",
+            "https://pinterest-api-one.vercel.app/",
             {
-                params,
-                headers: {
-                    "User-Agent": "Mozilla/5.0",
-                    "Accept": "application/json"
+                params: {
+                    q: query,
+                    limit: count
                 }
             }
         );
 
-        const json = JSON.stringify(data);
-        const regex = /https:\/\/i\.pinimg\.com\/(736|1200)x\/[^"]+\.(jpg|png|webp)/gi;
-        const images = [...new Set(json.match(regex))];
-
-        if (!images || images.length === 0)
+        if (!data || !data.images || !data.images.length)
             return message.reply(`❌ ما لقيت صور لـ "${query}"`);
 
-        const selected = images.slice(0, count);
         const attachments = [];
 
-        for (const url of selected) {
+        for (const url of data.images.slice(0, count)) {
             try {
                 attachments.push(await global.getStream(url));
             } catch {}
@@ -69,7 +52,7 @@ async function onCall({ message, args }) {
             return message.reply("⚠️ فشل تحميل الصور");
 
         return message.reply({
-            body: `✅ تم العثور على ${attachments.length} صورة لـ "${query}"`,
+            body: `✅ لقيت ${attachments.length} صورة لـ "${query}"`,
             attachment: attachments
         });
 
