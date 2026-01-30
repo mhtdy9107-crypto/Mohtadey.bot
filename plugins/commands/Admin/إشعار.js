@@ -2,113 +2,74 @@ const config = {
     name: "إشعار",
     aliases: ["sendnotification"],
     description: "Send notification to all groups",
-    usage: "[message/reply]",
+    usage: "[message]",
     permissions: [2],
-    credits: "ᏕᎥᏁᎨᎧ"
-}
+    credits: "XaviaTeam"
+};
 
 const langData = {
-    "en_US": {
-        "sendnoti.message": "╮════ـــــــــ═════ـــ════╭\n{message}\n╯═════ــــــ═════ــــــ═══╰",
-        "sendnoti.success": "Sent notification to {count} groups",
-        "sendnoti.fail": "Failed to send notification to {count} groups"
-    },
-    "vi_VN": {
-        "sendnoti.message": "╮════ـــــــــ═════ـــ════╭\n{message}\n╯═════ــــــ═ـ═══ــــــ═══╰",
-        "sendnoti.success": "Đã gửi thông báo đến {count} nhóm",
-        "sendnoti.fail": "Không thể gửi thông báo đến {count} nhóm"
-    },
     "ar_SY": {
-        "sendnoti.message": "╮════ـــــــــ═════ـــ════╭\n{message}\n╯═════ــــــ═════ــــــ═══╰",
-        "sendnoti.success": "إرسال اشعار إلى {count} المجموعات",
-        "sendnoti.fail": "فشل في إرسال إشعار إلى {count} المجموعات"
+        "sendnoti.message":
+            "╭─────── ❀ ❀ ❀ ───────╮\n" +
+            "        ✦  إِشْعَار  ✦\n" +
+            "╰─────── ❀ ❀ ❀ ───────╯\n\n" +
+            "{message}",
+        "sendnoti.success": "✅ تم إرسال الإشعار إلى {count} مجموعات",
+        "sendnoti.fail": "❌ فشل إرسال الإشعار إلى {count} مجموعات"
     }
-}
+};
 
-const exts = {
-    "photo": ".jpg",
-    "video": ".mp4",
-    "audio": ".mp3",
-    "animated_image": ".gif",
-    "share": ".jpg",
-    "file": ""
-}
+// 🔹 رابط الصورة الثابت
+const IMAGE_URL = "https://i.ibb.co/1GkLbB3r/1768714709999.jpg";
 
-// دالة لتقسيم النص الطويل على أسطر حسب طول محدد
-function wrapText(text, maxLength = 50) {
-    const lines = [];
-    const words = text.split(" ");
-    let line = "";
-    for (let word of words) {
-        if ((line + " " + word).trim().length > maxLength) {
-            lines.push(line.trim());
-            line = word;
-        } else {
-            line += " " + word;
-        }
-    }
-    if (line) lines.push(line.trim());
-    return lines.join("\n");
-}
+async function onCall({ message, getLang, prefix }) {
+    const { threadID } = message;
 
-async function onCall({ message, args, getLang, prefix }) {
-    const { type, messageReply, senderID, threadID } = message;
-    const attachments = type == "message_reply" ? messageReply.attachments : message.attachments;
-    let msg = (type == "message_reply" && messageReply.body ? messageReply.body : message.body.slice(prefix.length + config.name.length + 1)) || "";
+    let msg = message.body.slice(prefix.length + config.name.length + 1) || "";
+    if (!msg.trim()) msg = " ";
 
-    // تقسيم النص الطويل وتركه جوه القايمة
-    msg = wrapText(msg);
+    const imagePath = `${global.cachePath}/notification.jpg`;
 
-    let filePath = [];
-    if (attachments.length > 0) {
-        for (let i = 0; i < attachments.length; i++) {
-            try {
-                const filename = attachments[i].filename || `${Date.now()}_${senderID}_${i}`;
-                const ext = exts[attachments[i].type] || "";
-                if (filename + ext == ".gitkeep" || filename + ext == 'README.txt') continue;
-                const savePath = `${global.cachePath}/${filename + ext}`;
-                await global.downloadFile(savePath, attachments[i].url);
-                filePath.push(savePath);
-            } catch (err) {
-                console.error(err);
-            }
-        }
+    // تحميل الصورة
+    try {
+        await global.downloadFile(imagePath, IMAGE_URL);
+    } catch (err) {
+        return message.reply("❌ فشل تحميل صورة الإشعار");
     }
 
-    let PMs = [], allTIDs = Array.from(global.data.threads.keys()).filter(item => item != threadID), success = 0;
+    const allTIDs = Array.from(global.data.threads.keys()).filter(tid => tid !== threadID);
+    let success = 0;
+
     for (let i = 0; i < allTIDs.length; i++) {
         const tid = allTIDs[i];
-        PMs.push(new Promise(resolve => {
+        await new Promise(resolve => {
             setTimeout(async () => {
-                let tmp = await message.send({
-                    body: getLang("sendnoti.message", { message: msg }),
-                    attachment: filePath.map(item => global.reader(item))
-                }, tid).then(data => data).catch((err) => {
-                    if (err) return null;
-                });
-
-                if (tmp) success++;
+                try {
+                    await message.send({
+                        body: getLang("sendnoti.message", { message: msg }),
+                        attachment: global.reader(imagePath)
+                    }, tid);
+                    success++;
+                } catch (_) {}
                 resolve();
             }, i * 350);
-        }));
+        });
     }
 
-    await Promise.all(PMs);
-    filePath.forEach(item => {
-        try {
-            global.deleteFile(item)
-        } catch (err) {
-            console.error(err);
-        }
-    });
-    let resultMsg = getLang("sendnoti.success", { count: success });
-    if (success < allTIDs.length) resultMsg += "\n" + getLang("sendnoti.fail", { count: allTIDs.length - success });
+    try { global.deleteFile(imagePath); } catch (_) {}
 
-    message.reply(resultMsg);
+    let result = getLang("sendnoti.success", { count: success });
+    if (success < allTIDs.length) {
+        result += "\n" + getLang("sendnoti.fail", {
+            count: allTIDs.length - success
+        });
+    }
+
+    message.reply(result);
 }
 
 export default {
     config,
     langData,
     onCall
-    }
+};
