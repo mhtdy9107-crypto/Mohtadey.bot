@@ -17,21 +17,21 @@ async function onCall({ message, args, prefix, userPermissions }) {
             return message.reply("❌ الأمر غير موجود");
 
         return message.reply(
-`📌 اسم الأمر: ${cmd.name}
+`•◌────˚❀˚───◌ ────˚❀˚────◌
+📌 اسم الأمر: ${cmd.name}
 🔁 الأسماء البديلة: ${cmd.aliases?.join(", ") || "لا يوجد"}
 📝 الوصف: ${cmd.description || "لا يوجد"}
+
 🛠️ الاستخدام:
 ${prefix}${cmd.name} ${cmd.usage || ""}
 
 📂 القسم: ${cmd.category}
 ⏱️ الإنتظار: ${cmd.cooldown || 3} ثواني
 👤 المطوّر: ${cmd.credits || "غير معروف"}
+•◌────˚❀˚───◌ ────˚❀˚────◌
 `);
     }
 
-    // =========================
-    // تجميع الأوامر حسب الأقسام
-    // =========================
     let adminCmds = [];
     let economyCmds = [];
     let entertainmentCmds = [];
@@ -57,39 +57,62 @@ ${prefix}${cmd.name} ${cmd.usage || ""}
         else if (cat.includes("nsfw") || cat.includes("اباحي")) nsfwCmds.push(name);
     }
 
-    const formatCmds = (arr) => arr.length ? arr.map(c => `▣${c}`).join(" ") : "لا توجد أوامر";
+    const formatCmds = (arr) =>
+        arr.length ? arr.map(c => `▣ ${c}`).join("  ") : "لا توجد أوامر";
 
-    let total = adminCmds.length + economyCmds.length + entertainmentCmds.length + generalCmds.length + groupCmds.length + mediaCmds.length + nsfwCmds.length;
+    let total =
+        adminCmds.length +
+        economyCmds.length +
+        entertainmentCmds.length +
+        generalCmds.length +
+        groupCmds.length +
+        mediaCmds.length +
+        nsfwCmds.length;
 
     let body =
-`⌈ ADMIN ⌋
+`•◌────˚❀˚───◌ ────˚❀˚────◌
+        ﹝-﹞ الـــــــبادئة
+•◌────˚❀˚───◌ ────˚❀˚────◌
+
+⌈  ADMIN ⌋
 ${formatCmds(adminCmds)}
 
-⌈ ECONOMY ⌋
+•◌────˚❀˚───◌ ────˚❀˚────
+
+⌈  ECONOMY ⌋
 ${formatCmds(economyCmds)}
 
-⌈ ENTERTAINMENT ⌋
+•◌────˚❀˚───◌ ────˚❀˚────
+
+⌈  ENTERTAINMENT ⌋
 ${formatCmds(entertainmentCmds)}
+
+•◌────˚❀˚───◌ ────˚❀˚────
 
 ⌈ GENERAL ⌋
 ${formatCmds(generalCmds)}
 
+•◌────˚❀˚───◌ ────˚❀˚────
+
 ⌈ GROUP ⌋
 ${formatCmds(groupCmds)}
+
+•◌────˚❀˚───◌ ────˚❀˚────
 
 ⌈ MEDIA ⌋
 ${formatCmds(mediaCmds)}
 
+•◌────˚❀˚───◌ ────˚❀˚────
+
 ⌈ NSFW ⌋
 ${formatCmds(nsfwCmds)}
 
-⇒ المجموع: ${total} الأوامر
-⇒ يستخدم ${prefix}[امر] لمزيد من المعلومات حول الأمر.
+•◌────˚❀˚───◌ ────˚❀˚────◌
+⇒ 📊 المجموع: ${total} أمر
+⇒ ℹ️ استخدم: ${prefix}[اسم_الأمر] لعرض التفاصيل
+•◌────˚❀˚───◌ ────˚❀˚────◌
 `;
 
-    // =========================
-    // إضافة الصورة مباشرة
-    // =========================
     const imageUrl = "https://i.ibb.co/cS6SjxcB/1768628585933.jpg";
     return message.reply({ body, attachment: await global.getStream(imageUrl) });
 }
@@ -97,4 +120,4 @@ ${formatCmds(nsfwCmds)}
 export default {
     config,
     onCall
-}
+  }
