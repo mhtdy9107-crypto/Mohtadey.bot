@@ -10,9 +10,9 @@ const config = {
 const langData = {
     "ar_SY": {
         "sendnoti.message":
-            "╭─────── ❀إشـعاࢪ مـن الــمطوࢪ❀ ───────╮\n" +
-            "        "
-            "                            \n\n" +
+            "╭──── ❀ ❀ ❀ ───╮\n" +
+            "✦  إــشعار من المـطوࢪ  ✦\n" +
+            "╰──── ❀ ❀ ❀ ──╯\n\n" +
             "{message}",
         "sendnoti.success": "✅ تم إرسال الإشعار إلى {count} مجموعات",
         "sendnoti.fail": "❌ فشل إرسال الإشعار إلى {count} مجموعات"
