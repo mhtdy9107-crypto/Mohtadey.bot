@@ -1,9 +1,10 @@
-# _build.start.varLoaded: "تم تحميل متغير البيئة بنجاح."
+# ==================_build.js==================
+build.start.varLoaded: "تم تحميل متغير البيئة بنجاح."
 build.start.exit: "التنظيف والخروج..."
 build.start.serverStarted: "تمت تهيئة الخادم في البوابة {port} بكلمة سر: {serverAdminPassword}"
-
-build.booting.logging: "مسجل حاليا..."
-build.booting.logged: "تم تسجيل الدخول بنجاح - {botID}."
+build.start.logging: "مسجل حاليا..."
+build.start.logged: "تم تسجيل الدخول بنجاح - {botID}."
+build.start.plugin.loading: "تحضير plugins"
 
 build.startxConsole.terminalNotSupported: "Terminal {term} غير مدعوم."
 build.startxConsole.platformNotSupported: "لايوجد دعم لتشغيل xConsole على المنصة {platform}."
@@ -11,100 +12,108 @@ build.startxConsole.platformNotSupported: "لايوجد دعم لتشغيل xCon
 build.refreshState: "تحديث ملفات تعريف الارتباط..."
 build.refreshMqtt: "تحديث MQTT..."
 
-# checkAppstate.js
+# ==================checkAppstate.js==================
 modules.checkAppstate.parsingError: "file appstate ليس صالحا / لايمكن فك تشفيرها"
 modules.checkAppstate.noProtection: "appstate الحماية معطلة"
 modules.checkAppstate.error.notSupported: "التشفير غير مدعوم لهذه البيئة"
 modules.checkAppstate.error.noAppstate: "لم يتم العثور على file appstate"
-modules.checkAppstate.foundAppstate: "تم العثور على  file appstate"
+modules.checkAppstate.foundAppstate: "تم العثور على file appstate"
 modules.checkAppstate.error.noKey: "لم يتم العثور على رمز حماية appstate"
 modules.checkAppstate.decrypting: "فك file appstate..."
 modules.checkAppstate.encrypting: "تشفير file appstate..."
-modules.checkAppstate.error.invalid: "file appstate غير صالح, يرجى التحقق مرة أخرى"
+modules.checkAppstate.error.invalid: "file appstate غير صالح، يرجى التحقق مرة أخرى"
 
-# loader.js
+# ==================loader.js==================
 modules.loader.plugins.commands.error.nameExists: "اسم الامر {name} موجود مسبقا!"
 modules.loader.plugins.commands.error.noAliases: "لا توجد أسماء مستعارة متاحة!"
 
 modules.loader.plugins.default.error.onCallNotExists: "وظيفة التنفيذ مفقودة!"
-modules.loader.plugins.default.error.onCallNotFunction: "ليس وظيفة oncall!"
+modules.loader.plugins.default.error.onCallNotFunction: "onCall ليست وظيفة!"
 modules.loader.plugins.default.error.noExport: "البيانات الصالحة مفقودة!"
 modules.loader.plugins.default.error.onLoadFailed: "خطأ في تنفيذ الوظيفة onLoad: {error}"
 
-modules.loader.plugins.commands.error.failed: "تعذر تحميل الامر {fileName}, خطأ: {error}"
-modules.loader.plugins.onMessage.error.failed: "تعذر تحميل المعالج {fileName}, خطأ: {error}"
-modules.loader.plugins.events.error.failed: "تعذر تحميل الحدث {fileName}, خطأ: {error}"
-modules.loader.plugins.customs.error.failed: "غير قادر على تحميل مخصص {fileName}, خطأ: {error}"
+modules.loader.plugins.commands.error.failed: "تعذر تحميل الامر {fileName}، خطأ: {error}"
+modules.loader.plugins.onMessage.error.failed: "تعذر تحميل معالج الرسائل {fileName}، خطأ: {error}"
+modules.loader.plugins.events.error.failed: "تعذر تحميل الحدث {fileName}، خطأ: {error}"
+modules.loader.plugins.customs.error.failed: "تعذر تحميل المخصص {fileName}، خطأ: {error}"
 
-modules.loader.plugins.commands.loaded: "محمل {commands}/{total} يأمر"
-modules.loader.plugins.onMessage.loaded: "محمل {onMessage}/{total} معالج الرسائل"
-modules.loader.plugins.events.loaded: "محمل {events}/{total} حدث"
-modules.loader.plugins.customs.loaded: "انطلقت {customs}/{total} العادة"
+modules.loader.plugins.commands.loaded: "تم تحميل {commands}/{total} أمر"
+modules.loader.plugins.onMessage.loaded: "تم تحميل {onMessage}/{total} معالج رسائل"
+modules.loader.plugins.events.loaded: "تم تحميل {events}/{total} حدث"
+modules.loader.plugins.customs.loaded: "تم تحميل {customs}/{total} مخصص"
 
-# handlers
-handlers.commands.nsfwNotAllowed: "لاتسمح هذه المجموعة بأوامر nsfw."
-handlers.commands.noPermission: "انت غير مصرح لك لاستخدام."
-handlers.default.error: "🌸 هل ترون الخطأ؟ قولو: خطأ
-التفاصيل: {error}"
-handlers.listen.accountError: "حدث خطأ في حسابك ، يرجى المحاولة مرة أخرى لاحقًا."
+# ==================handlers==================
+handlers.commands.nsfwNotAllowed: "هذه المجموعة لا تسمح بأوامر NSFW."
+handlers.commands.noPermission: "أنت غير مصرح لك باستخدام هذا الأمر."
+handlers.default.error: "حدث خطأ: {error}"
+handlers.listen.accountError: "حدث خطأ في حسابك، يرجى المحاولة لاحقًا."
 
-# resend
-plugins.resend.noMessage: "• {author} هل ترون الرسالة المحزوفه قولو رسالة محزوفة أحسنتم  "
-plugins.resend.unsendNoMessageButAttach: "• {author} لم يرسل {attachmentsCount} المرفقات:"
-plugins.resend.unsendMessageAndAttach: "• {author} قمت بالغاء ارسال رسالة مع {attachmentsCount} المرفقات:\n\n{message}"
-plugins.resend.unsendMessage: "• {author} أزلت للتو رسالة:\n\n{message}"
+# ==================resend==================
+plugins.resend.noMessage: "• {author} أزال للتو رسالة."
+plugins.resend.unsendNoMessageButAttach: "• {author} لم يرسل نصًا ولكن أزال {attachmentsCount} مرفق:"
+plugins.resend.unsendMessageAndAttach: "• {author} أزال رسالة مع {attachmentsCount} مرفقات:\n\n{message}"
+plugins.resend.unsendMessage: "• {author} أزال الرسالة التالية:\n\n{message}"
 
-# Database
-database.mongo_url_not_found: "متغير البيئة غير موجود MONGO_URL"
+# ==================database==================
+database.mongo_url_not_found: "متغير البيئة MONGO_URL غير موجود"
 database.init: "تهيئة قاعدة البيانات {database}..."
+database.init.done: "تم الاتصال بقاعدة البيانات {database}."
 database.thread.get.success: "{threadID} - مجموعة جديدة"
 database.user.get.success: "{userID} - مستخدم جديد"
 database.error: "حدث خطأ أثناء الوصول إلى قاعدة البيانات: {error}"
+database.updating: "تحديث قاعدة البيانات {database}..."
 
-# events
-plugins.events.change_thread_image.userChangedThreadImage: "🌸 {author} قام بتغيير صورة المجموعة 🌸" # "\"{author}\" غيرت صورة المجموعة."
-plugins.events.change_thread_image.reversed: "🌷 أعدت الصورة القديمة حفاظاً على جمال المجموعة 🌷" # "غيرت صورة المجموعه وانا رجعتها عندك راي 😐؟ \n."
-plugins.events.change_thread_image.reversed_t: "احشك مالك مع الصورة دي ☝🐸" 
-plugins.events.change_thread_image.setNewImage: "\nغير مسموح بتغيير صور المجموعة ولكن نظرًا لعدم وجود صور قديمة ، سيتم استخدام صور جديدة."
+# ==================events==================
+plugins.events.change_thread_image.userChangedThreadImage: "\"{author}\" غيّر صورة المجموعة."
+plugins.events.change_thread_image.reversed: "\nغير مسموح بتغيير صورة المجموعة، تمت إعادتها."
+plugins.events.change_thread_image.reversed_t: "[ ANTI ALERT ] تم منع تغيير صورة المجموعة!"
+plugins.events.change_thread_image.setNewImage: "\nلا توجد صورة قديمة، سيتم تعيين صورة جديدة."
+plugins.events.change_thread_image.unsupported: "تنسيق الصورة غير مدعوم للمجموعة {threadId}، يُقبل URL فقط."
 
-plugins.events.subcribe.addSelf: "Bot تمت إضافته إلى المجموعة \"{threadName}\" ({threadId}) من قبل شخص يستخدم \"{authorName}\" ({authorId})."
-plugins.events.subcribe.connected: "─────〖 ✿ كيفن ✿ 〗─────\n\n ✅ تم الاتصال بنجاح \n\n════════❍════════\n\n  اسم البوت  : ✿ كيفن ✿ \n\n════════❍════════\n\n اسم المطور  :Ꮥ.ᎥᏁᎨᎧᎯᏴᎨᏟᎻᎥᎯᎶᎯ 🇸🇩 \n\n════════❍════════\n\n رابط حساب المطور: https://www.facebook.com/profile.php?id=61586897962846\n\n════════❍════════\n\n   \n\n"
-plugins.events.subcribe.error.createMonitor: "تعذر إنشاء مجموعة مشرفين لهذه المجموعة."
-plugins.events.subcribe.createdMonitor: "المجموعة {threadId} سيتم رصد العمل في هذه المجموعة"
-# plugins.events.subcribe.addMembers: "\"{authorName}\" ({authorId}) اضاف {membersLength} عضو:\n{members}"
-plugins.events.subcribe.welcome: "🌸✿─── مرحباً ───✿🌸\n ❏ اهلا بـك يا  | {members} \n ❏ في مجموعة |  {threadName} \n ❏ الاعــضــــاء  | {newCount} \n ❏ اتقي شر من احسنت اليه 🫶 \n◆━━━━━▣ ✿ ▣━━━━━━◆\n\n"
-plugins.events.subcribe.warns: "{username} قلنا ليك اقعد ساي ما داير تقعد بل راسك يلا 🐸☝"
+plugins.events.subscribe.addSelf: "تمت إضافة البوت إلى مجموعة \"{threadName}\" ({threadId}) بواسطة \"{authorName}\" ({authorId})."
 
-plugins.events.unsubcribe.bot.left: "Bot غادر \"{threadName}\" ({threadId})."
-plugins.events.unsubcribe.bot.kicked: "Bot تم طرده من \"{threadName}\" ({threadId}) بواسطة \"{authorName}\" ({authorId})."
-# plugins.events.unsubcribe.left: "🌷 وداعاً يا {leftName} 🌷
-سنفتقدك 💖" # "\"{leftName}\" ({leftId}) غادر بكرامته "
-# plugins.events.unsubcribe.kicked: "💮 تم إخراج {leftName} 💮
-✨ مع السلامة ✨" # "\"{leftName}\" ({leftId}) تم طرده من قبل\"{authorName}\" ({authorId})."
-plugins.events.unsubcribe.left: "🌷 وداعاً يا {leftName} 🌷
-سنفتقدك 💖" # "{leftName} \n كان رقاصة وفدادية وسلاق بيض ☝ 🗿  "
-plugins.events.unsubcribe.kicked: "💮 تم إخراج {leftName} 💮
-✨ مع السلامة ✨" # "{leftName} \n" كان رقاصه العب" 
-plugins.events.unsubcribe.antiOut.error: "احشو ما بلزمنا 🐸"
-plugins.events.unsubcribe.antiOut.success: "ماشي وين يا عب يا عب بل بس هنا  🗿☝"
+# ===== رسالة الاتصال (معدلة) =====
+plugins.events.subscribe.connected: |
+✧ تـــــــــم الاتـــصال بـــــــــنجاح ✧
 
+⊹ الــبادئة: [-] اســـــم الـبوت ﹝كيفن﹞
+
+⊹ الــــــمطوࢪ: Ꮥ.ᎥᏁᎨᎧᎯᏴᎨᏟᎻᎥᎯᎶᎯ
+
+اولـيسۍ الـــحيات الـۍ لـعبن وا مــتاع الى حـين 🫶🌹
+─── ･ ｡ﾟ☆: ............. :☆ﾟ. ───
+
+plugins.events.subscribe.error.createMonitor: "تعذر إنشاء مجموعة مشرفين."
+plugins.events.subscribe.createdMonitor: "سيتم تفعيل المراقبة على هذه المجموعة {threadId}."
+plugins.events.subscribe.addMembers: "\"{authorName}\" ({authorId}) أضاف {membersLength} عضو:\n{members}"
+plugins.events.subscribe.welcome: "أهلًا {members} في {threadName}!\nأنت العضو رقم {newCount}."
+plugins.events.subscribe.warns: "{username} تم طرده لتجاوز عدد التحذيرات."
+
+plugins.events.unsubscribe.bot.left: "غادر البوت مجموعة \"{threadName}\" ({threadId})."
+plugins.events.unsubscribe.bot.kicked: "تم طرد البوت من \"{threadName}\" ({threadId}) بواسطة \"{authorName}\" ({authorId})."
+plugins.events.unsubscribe.left: "\"{leftName}\" ({leftId}) غادر المجموعة."
+plugins.events.unsubscribe.kicked: "\"{leftName}\" ({leftId}) تم طرده بواسطة \"{authorName}\" ({authorId})."
+
+plugins.events.unsubscribe.antiOut.error: "[ ANTIOUT ] لا يمكن إعادة إضافة العضو!"
+plugins.events.unsubscribe.antiOut.success: "[ ANTIOUT ] وين ماشي؟ الرجوع إجباري 🗿🔨"
 
 plugins.events.thread-call.startedCall: "\"{authorName}\" ({authorId}) بدأ مكالمة."
-plugins.events.thread-call.startedVideoCall: "\"{authorName}\" ({authorId}) فتح مكالمة فيديو جماعية."
-plugins.events.thread-call.endedCall: "انتهت المكالمة ، وقت الاتصال
-: {callDuration}."plugins.events.thread-call.endedVideoCall: "انتهت مكالمة الفيديو ، ووقت المكالمة: {callDuration}."
-plugins.events.thread-call.joinedCall: "\"{authorName}\" ({authorId}) انضم إلى المكالمة."
-plugins.events.thread-call.joinedVideoCall: "\"{authorName}\" ({authorId}) انضم إلى مكالمة فيديو."
+plugins.events.thread-call.startedVideoCall: "\"{authorName}\" ({authorId}) بدأ مكالمة فيديو."
+plugins.events.thread-call.endedCall: "انتهت المكالمة، مدة الاتصال: {callDuration}."
+plugins.events.thread-call.endedVideoCall: "انتهت مكالمة الفيديو، المدة: {callDuration}."
+plugins.events.thread-call.joinedCall: "\"{authorName}\" ({authorId}) انضم للمكالمة."
+plugins.events.thread-call.joinedVideoCall: "\"{authorName}\" ({authorId}) انضم لمكالمة فيديو."
 
-plugins.events.thread-update.name.changed: "💖 {authorName} غيّر اسم المجموعة إلى {newName} 💖" # "\"{authorName}\" ({authorId}) غيرت اسم المجموعة إلى \"{newName}\"."
-plugins.events.thread-update.name.reversed: "🌸 لم يُسمح بتغيير اسم المجموعة، لذلك أعدت الاسم القديم # "\nغير مسموح بتغيير اسم المجموعة ، لذلك تم تغيير الاسم القديم."
-plugins.events.thread-update.name.reversed_t: "تغير اسم المجموعة غير مسموح به لزالك تممة اعادته يا عب "
-plugins.events.thread-update.color.changed: "🌸 {authorName} غيّر لون المجموعة من {oldColor} إلى {newColor} 🌸" # "\"{authorName}\" ({authorId}) تغير لون خط المجموعة من {oldColor} الى {newColor}."
-plugins.events.thread-update.emoji.changed: "💖 {authorName} غيّر إيموجي المجموعة من {oldEmoji} إلى {newEmoji} 💖" # "\"{authorName}\" ({authorId}) تغير الرمز التعبيري للمجموعة من {oldEmoji} الى {newEmoji}."
-plugins.events.thread-update.approvalMode.changed: "\"{authorName}\" ({authorId}) تم تغيير وضع الإشراف على الأعضاء إلى {newApprovalMode}."
-plugins.events.thread-update.admins.added: "\"{authorName}\" ({authorId}) اضاف \"{targetName}\" ({targetId}) الى مدير مجموعة."
-plugins.events.thread-update.admins.removed:  "\"{authorName}\" ({authorId}) حذف \"{targetName}\" ({targetId}) من مدراء المجموعة."
-plugin.events.user-nickname.changedBy: "\"{authorName}\" ({authorId}) غير لقبه \"{targetName}\" ({targetId}) الى \"{newNickname}\"."
-plugin.events.user-nickname.changedBySelf: "\"{authorName}\" ({authorId}) غير لقبه الى \"{newNickname}\"."
-plugin.events.user-nickname.reversed: "\nلم يُسمح بتغيير الاسم المستعار ، لذلك قمت بتغييره مرة أخرى إلى الاسم المستعار القديم."
-plugin.events.user-nickname.reversed_t: "احشك مافي تغير ليك تغير كنيات  "
+plugins.events.thread-update.name.changed: "\"{authorName}\" غيّر اسم المجموعة إلى \"{newName}\"."
+plugins.events.thread-update.name.reversed: "\nتم منع تغيير اسم المجموعة وأُعيد الاسم السابق."
+plugins.events.thread-update.name.reversed_t: "[ ANTI ALERT ] تغيير اسم المجموعة غير مسموح!"
+plugins.events.thread-update.color.changed: "\"{authorName}\" غيّر لون المجموعة من {oldColor} إلى {newColor}."
+plugins.events.thread-update.emoji.changed: "\"{authorName}\" غيّر إيموجي المجموعة من {oldEmoji} إلى {newEmoji}."
+plugins.events.thread-update.approvalMode.changed: "تم تغيير وضع الموافقة إلى {newApprovalMode}."
+plugins.events.thread-update.admins.added: "\"{authorName}\" أضاف \"{targetName}\" كمدير."
+plugins.events.thread-update.admins.removed: "\"{authorName}\" أزال \"{targetName}\" من المدراء."
+
+plugin.events.user-nickname.changedBy: "\"{authorName}\" غيّر لقب \"{targetName}\" إلى \"{newNickname}\"."
+plugin.events.user-nickname.changedBySelf: "\"{authorName}\" غيّر لقبه إلى \"{newNickname}\"."
+plugin.events.user-nickname.reversed: "\nتم منع تغيير اللقب وأُعيد اللقب السابق."
+plugin.events.user-nickname.reversed_t: "[ ANTI ALERT ] تغيير اللقب غير مسموح به لذلك تمت إعادته."
