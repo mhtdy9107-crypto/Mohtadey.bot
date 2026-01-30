@@ -70,9 +70,9 @@ function upNodeReplit() {
     }
 })();
 
-// End
-
+// =======================
 // CHECK UPDATE
+// =======================
 async function checkUpdate() {
     logger.custom("Checking for updates...", "UPDATE");
     try {
@@ -84,6 +84,7 @@ async function checkUpdate() {
         const currentVersion = JSON.parse(
             readFileSync("./package.json")
         ).version;
+
         if (semver.lt(currentVersion, version)) {
             logger.warn(`New version available: ${version}`);
             logger.warn(`Current version: ${currentVersion}`);
@@ -95,13 +96,33 @@ async function checkUpdate() {
     }
 }
 
-// Child handler
-const _1_MINUTE = 60000;
-let restartCount = 0;
+// =======================
+// MQTT REFRESH HANDLER
+// =======================
+const ONE_HOUR = 60 * 60 * 1000;
 
+function refreshListenMQTT() {
+    try {
+        if (global.listenmqtt) {
+            if (typeof global.listenmqtt === "function") {
+                global.listenmqtt();
+                logger.custom("listenmqtt callback refreshed.", "MQTT");
+            }
+        } else {
+            logger.warn("listenmqtt not found, skipping refresh.");
+        }
+    } catch (err) {
+        logger.error("Failed to refresh listenmqtt callback.");
+    }
+}
+
+// =======================
+// MAIN
+// =======================
 async function main() {
     await checkUpdate();
     await loadPlugins();
+
     const child = spawn(
         "node",
         [
@@ -117,26 +138,15 @@ async function main() {
         }
     );
 
-    child.on("close", async (code) => {
-        handleRestartCount();
-        if (code !== 0 && restartCount < 5) {
-            console.log();
-            logger.error(`An error occurred with exit code ${code}`);
-            logger.warn("Restarting...");
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-            main();
-        } else {
-            console.log();
-            logger.error("XaviaBot has stopped, press Ctrl + C to exit.");
-        }
+    // ⛔ لا إعادة تشغيل تلقائي
+    child.on("close", (code) => {
+        console.log();
+        logger.error(`XaviaBot stopped with exit code ${code}`);
+        logger.warn("Auto-restart is disabled. Press Ctrl + C to exit.");
     });
-}
 
-function handleRestartCount() {
-    restartCount++;
-    setTimeout(() => {
-        restartCount--;
-    }, _1_MINUTE);
+    // 🔄 تحديث listenmqtt كل ساعة بدون restart
+    setInterval(refreshListenMQTT, ONE_HOUR);
 }
 
 main();
