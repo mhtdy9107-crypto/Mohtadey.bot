@@ -1,80 +1,94 @@
-import { statSync } from 'fs';
-import { join } from 'path';
-
-const _48MB = 48 * 1024 * 1024;
+import { join } from "path";
+import axios from "axios";
+import fs from "fs";
 
 const config = {
-    name: "تكتوك",
-    aliases: ["tik", "tikdown", "tikdl"],
-    version: "1.0.1",
-    description: "Download video tiktok no watermark.",
-    usage: "[url]",
-    credits: "ᏕᎥᏁᎨᎧ",
-    cooldown: 5
+    name: "تيكتوك",
+    aliases: ['tt', 'tiktokvideo'],
+    version: "1.0.0",
+    description: "Search and download TikTok videos",
+    usage: '<keyword>',
+    cooldown: 5,
+    credits: "no credits tho cuz i used the xaviateam's video cmd"
 }
 
 const langData = {
     "en_US": {
-        "missingUrl": "Please provide a url",
-        "fileTooLarge": "File is too large, max size is 48MB",
-        "error": "An error occured"
-    },
-    "vi_VN": {
-        "missingUrl": "Vui lòng cung cấp một url",
-        "fileTooLarge": "File quá lớn, tối đa 48MB",
-        "error": "Đã xảy ra lỗi"
-    },
-    "ar_SY": {
-        "missingUrl": "يرجى تقديم عنوان الرابط",
-        "fileTooLarge": "الملف كبير جدًا ، الحد الأقصى للحجم هو 48 ميجا بايت",
-        "error": "حدث خطأ"
-    },
+        "tiktok.missingArguement": "Please provide a search term",
+        "tiktok.noResult": "No videos found",
+        "tiktok.error": "Error occurred",
+        "tiktok.downloading": "Downloading...",
+        "tiktok.choose": "Choose a video (reply with number):"
+    }
 }
 
-async function getVideoURL(url) {
+async function downloadFile(url, path) {
+    const writer = fs.createWriteStream(path);
+    const response = await axios({url, method: 'GET', responseType: 'stream'});
+    response.data.pipe(writer);
+    return new Promise((resolve, reject) => {
+        writer.on('finish', resolve);
+        writer.on('error', reject);
+    });
+}
 
+async function playVideo(message, video, getLang) {
+    message.react("⏳");
+    const cachePath = join(global.cachePath, `_tiktok${Date.now()}.mp4`);
+    
     try {
-        const res = await global
-            .GET(`${global.xva_api.main}/tikdown?url=${url}`);
-
-        return { videoUrl: res.data.result.video.url_list[0] || null, desc: res.data.result.aweme_detail.desc || null };
-    } catch (e) {
-        console.error(e);
-        return null;
+        await message.reply(getLang("tiktok.downloading"));
+        await downloadFile(video.url, cachePath);
+        
+        if (!fs.existsSync(cachePath)) throw new Error("Download failed");
+        
+        await message.reply({
+            body: video.title || "TikTok Video",
+            attachment: fs.createReadStream(cachePath)
+        });
+        message.react("✅");
+    } catch (err) {
+        message.react("❌");
+        message.reply(getLang("tiktok.error"));
+    } finally {
+        if (fs.existsSync(cachePath)) fs.unlinkSync(cachePath);
     }
+}
 
+async function chooseVideo({ message, eventData, getLang }) {
+    const { videos } = eventData;
+    const index = parseInt(message.body) - 1;
+    if (isNaN(index) || index < 0 || index >= videos.length) return message.reply("Invalid selection");
+    await playVideo(message, videos[index], getLang);
 }
 
 async function onCall({ message, args, getLang }) {
-    let cachePath;
     try {
-        if (!args[0]) return message.reply(getLang('missingUrl'));
-        const url = args[0];
-
-        message.react("⏳");
-        const { videoUrl, desc } = await getVideoURL(url);
-        if (!videoUrl) return message.reply(getLang('error'));
-
-        cachePath = join(global.cachePath, `_tikdown_${message.senderID}${Date.now()}.mp4`);
-
-        await global.downloadFile(cachePath, videoUrl);
-        message.react("✅");
-        const fileStat = statSync(cachePath);
-        if (fileStat.size > _48MB) message.reply(getLang('fileTooLarge'));
-        else await message.reply({
-            body: desc,
-            attachment: global.reader(cachePath)
+        if (!args[0]) return message.reply(getLang("tiktok.missingArguement"));
+        
+        const searchTerm = encodeURIComponent(args.join(" "));
+        const apiUrl = `https://rapido.zetsu.xyz/api/tk?search=${searchTerm}`;
+        
+        const response = await axios.get(apiUrl);
+        const data = response.data;
+        
+        if (!data || !data.data || data.data.length === 0) {
+            return message.reply(getLang("tiktok.noResult"));
+        }
+        
+        const videos = data.data.slice(0, 6);
+        const formattedList = videos.map((v, i) => `${i+1}. ${v.title || "No title"}`).join("\n\n");
+        
+        const sendData = await message.reply({
+            body: `${getLang("tiktok.choose")}\n\n${formattedList}`
         });
-    } catch (e) {
-        message.react("❌");
-        console.error(e);
-        message.reply(getLang('error'));
-    }
-
-    try {
-        if (global.isExists(cachePath)) global.deleteFile(cachePath);
-    } catch (e) {
-        console.error(e);
+        
+        return sendData.addReplyEvent({
+            callback: chooseVideo,
+            videos: videos.map(v => ({title: v.title, url: v.video_url}))
+        });
+    } catch (err) {
+        message.reply(getLang("tiktok.error"));
     }
 }
 
