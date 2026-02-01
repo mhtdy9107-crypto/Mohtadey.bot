@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, existsSync, statSync } from "fs";
 import { spawn, execSync } from "child_process";
 import semver from "semver";
 import axios from "axios";
+import express from "express";
 
 import {} from "dotenv/config";
 import logger from "./core/var/modules/logger.js";
@@ -15,7 +16,20 @@ import {
 
 console.clear();
 
-// Install newer node version on some old Repls
+/* ======================
+   KEEP ALIVE SERVER
+====================== */
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get("/", (_, res) => res.send("XaviaBot is alive 🚀"));
+app.listen(PORT, () =>
+    logger.custom(`Keep-alive server running on port ${PORT}`, "SERVER")
+);
+
+/* ======================
+   NODE VERSION CHECK
+====================== */
 function upNodeReplit() {
     return new Promise((resolve) => {
         execSync(
@@ -29,26 +43,20 @@ function upNodeReplit() {
     if (process.version.slice(1).split(".")[0] < 16) {
         if (isReplit) {
             try {
-                logger.warn("Installing Node.js v16 for Repl.it...");
+                logger.warn("Installing Node.js v16 for Replit...");
                 await upNodeReplit();
-                if (process.version.slice(1).split(".")[0] < 16)
-                    throw new Error("Failed to install Node.js v16.");
             } catch (err) {
                 logger.error(err);
                 process.exit(0);
             }
         }
-        logger.error(
-            "Xavia requires Node 16 or higher. Please update your version of Node."
-        );
+        logger.error("Node.js v16 or higher is required.");
         process.exit(0);
     }
 
     if (isGlitch) {
         const WATCH_FILE = {
-            restart: {
-                include: ["\\.json"],
-            },
+            restart: { include: ["\\.json"] },
             throttle: 3000,
         };
 
@@ -56,7 +64,7 @@ function upNodeReplit() {
             !existsSync(process.cwd() + "/watch.json") ||
             !statSync(process.cwd() + "/watch.json").isFile()
         ) {
-            logger.warn("Glitch environment detected. Creating watch.json...");
+            logger.warn("Glitch detected. Creating watch.json...");
             writeFileSync(
                 process.cwd() + "/watch.json",
                 JSON.stringify(WATCH_FILE, null, 2)
@@ -70,9 +78,9 @@ function upNodeReplit() {
     }
 })();
 
-// =======================
-// CHECK UPDATE
-// =======================
+/* ======================
+   CHECK UPDATE
+====================== */
 async function checkUpdate() {
     logger.custom("Checking for updates...", "UPDATE");
     try {
@@ -80,50 +88,49 @@ async function checkUpdate() {
             "https://raw.githubusercontent.com/XaviaTeam/XaviaBot/main/package.json"
         );
 
-        const { version } = res.data;
-        const currentVersion = JSON.parse(
+        const latest = res.data.version;
+        const current = JSON.parse(
             readFileSync("./package.json")
         ).version;
 
-        if (semver.lt(currentVersion, version)) {
-            logger.warn(`New version available: ${version}`);
-            logger.warn(`Current version: ${currentVersion}`);
+        if (semver.lt(current, latest)) {
+            logger.warn(`New version available: ${latest}`);
+            logger.warn(`Current version: ${current}`);
         } else {
             logger.custom("No updates available.", "UPDATE");
         }
-    } catch (err) {
-        logger.error("Failed to check for updates.");
+    } catch {
+        logger.warn("Failed to check for updates.");
     }
 }
 
-// =======================
-// MQTT REFRESH HANDLER
-// =======================
+/* ======================
+   MQTT REFRESH (NO RESTART)
+====================== */
 const ONE_HOUR = 60 * 60 * 1000;
 
 function refreshListenMQTT() {
     try {
-        if (global.listenmqtt) {
-            if (typeof global.listenmqtt === "function") {
-                global.listenmqtt();
-                logger.custom("listenmqtt callback refreshed.", "MQTT");
-            }
+        if (typeof global.listenmqtt === "function") {
+            global.listenmqtt();
+            logger.custom("listenmqtt refreshed.", "MQTT");
         } else {
-            logger.warn("listenmqtt not found, skipping refresh.");
+            logger.warn("listenmqtt not found.");
         }
-    } catch (err) {
-        logger.error("Failed to refresh listenmqtt callback.");
+    } catch {
+        logger.error("Failed to refresh listenmqtt.");
     }
 }
 
-// =======================
-// MAIN
-// =======================
-async function main() {
-    await checkUpdate();
-    await loadPlugins();
+/* ======================
+   AUTO RESTART (CRASH ONLY)
+====================== */
+let child = null;
 
-    const child = spawn(
+function startBot(reason = "") {
+    if (reason) logger.warn(reason);
+
+    child = spawn(
         "node",
         [
             "--trace-warnings",
@@ -138,14 +145,28 @@ async function main() {
         }
     );
 
-    // ⛔ لا إعادة تشغيل تلقائي
     child.on("close", (code) => {
-        console.log();
-        logger.error(`XaviaBot stopped with exit code ${code}`);
-        logger.warn("Auto-restart is disabled. Press Ctrl + C to exit.");
+        logger.error(`Bot stopped with exit code ${code}`);
+        logger.warn("Restarting bot automatically...");
+        setTimeout(() => startBot("Auto-restart after crash"), 5000);
     });
 
-    // 🔄 تحديث listenmqtt كل ساعة بدون restart
+    child.on("error", (err) => {
+        logger.error("Child process error: " + err.message);
+        startBot("Restarting after process error");
+    });
+}
+
+/* ======================
+   MAIN
+====================== */
+async function main() {
+    await checkUpdate();
+    await loadPlugins();
+
+    startBot();
+
+    // فقط Refresh بدون Restart
     setInterval(refreshListenMQTT, ONE_HOUR);
 }
 
