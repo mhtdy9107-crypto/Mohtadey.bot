@@ -1,44 +1,23 @@
-import a from "axios";
+import axios from "axios";
 
-const config = {
+export const config = {
   name: "بحث",
-  aliases: ["duckduckgo", "ddg"],
-  permissions: [0],
-  cooldown: 5,
-  description: "Search using DuckDuckGo",
-  credits: "jm"
+  aliases: ["anime"],
+  description: "جلب صورة أنمي عشوائية",
+  usage: "انمي",
+  credits: "سينكو"
 };
 
-function onCall({ message: m, args: ar }) {
-  const query = ar.join(" ");
-  if (!query) return m.reply("Please provide a search query.");
-  
-  const lowerQuery = query.toLowerCase();
-  if (lowerQuery.includes("porn") || lowerQuery.includes("sex") || lowerQuery.includes("xxx") || lowerQuery.includes("nsfw") || lowerQuery.includes("pornhub") || lowerQuery.includes("xnxx") || lowerQuery.includes("pinayot") || lowerQuery.includes("rule34") || lowerQuery.includes("hentai") || lowerQuery.includes("hanime") || lowerQuery.includes("kantutan") || lowerQuery.includes("kantotan") || lowerQuery.includes("iyot") || lowerQuery.includes("xvideos")) {
-    return m.reply("NSFW queries are not allowed.");
-  }
+export async function onCall({ message }) {
+  const msg = await message.reply("⏳ جاري جلب صورة أنمي...");
 
-  m.react("⏳");
-  a.get(`https://rapido.zetsu.xyz/api/duckduckgo?query=${encodeURIComponent(query)}`)
-    .then((res) => {
-      if (!res.data.status || !res.data.results || res.data.results.length === 0) {
-        throw new Error("No results found.");
-      }
-      
-      const results = res.data.results;
-      let reply = `Search results for "${query}":\n\n`;
-      
-      results.forEach((item, index) => {
-        reply += `${index + 1}. ${item.title}\n${item.description}\nLink: ${item.link}\n\n`;
-      });
-      
-      m.react("✅");
-      m.reply(reply);
-    })
-    .catch((e) => {
-      m.react("❌");
-      m.reply(`Error: ${e.message}`);
+  try {
+    const res = await axios.get("https://api.waifu.pics/sfw/waifu");
+    await message.edit({
+      body: "🖼️ صورة أنمي",
+      attachment: await global.utils.getStreamFromURL(res.data.url)
     });
+  } catch {
+    await msg.edit("❌ فشل جلب الصورة");
+  }
 }
-
-export default { config, onCall };
