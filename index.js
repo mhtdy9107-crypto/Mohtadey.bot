@@ -1,163 +1,152 @@
-const express = require('express');
-const path = require('path');
-const { spawn } = require("child_process");
-const fs = require("fs");
-const http = require("http");
-const WebSocket = require("ws");
-const log = require("./logger/log.js");
+import { readFileSync, writeFileSync, existsSync, statSync } from "fs";
+import { spawn, execSync } from "child_process";
+import semver from "semver";
+import axios from "axios";
 
-const app = express();
-const server = http.createServer(app);
-const port = process.env.PORT || 3000;
+import {} from "dotenv/config";
+import logger from "./core/var/modules/logger.js";
+import { loadPlugins } from "./core/var/modules/installDep.js";
 
-// Ensure log storage
-if (!fs.existsSync("./cache")) fs.mkdirSync("./cache");
-const logPath = path.join(__dirname, "cache", "logs.txt");
-fs.writeFileSync(logPath, "", { flag: "a" });
-const logStream = fs.createWriteStream(logPath, { flags: "a" });
+import {
+    isGlitch,
+    isReplit,
+    isGitHub,
+} from "./core/var/modules/environments.get.js";
 
-let clients = [];
+console.clear();
 
-const originalLog = console.log;
-console.log = (...args) => {
-  const logMsg = args.map(arg => (typeof arg === "object" ? JSON.stringify(arg) : String(arg))).join(" ");
-  originalLog(logMsg);
-  logStream.write(logMsg + "\n");
-  clients.forEach(ws => ws.readyState === 1 && ws.send(logMsg));
-};
-
-// WebSocket for live logs
-const wss = new WebSocket.Server({ server });
-wss.on("connection", ws => {
-  clients.push(ws);
-  ws.send("[Connected] ✅ GoatBot log viewer active");
-  ws.on("close", () => {
-    clients = clients.filter(c => c !== ws);
-  });
-});
-
-// Route: /test
-app.get('/test', (req, res) => {
-  res.sendFile(path.join(__dirname, 'test.html'));
-});
-
-// Route: /logs viewer (enhanced UI)
-app.get("/logs", (req, res) => {
-  res.send(`
-  <html>
-    <head>
-      <title>GoatBot Logs</title>
-      <style>
-        body { font-family: monospace; background: #000; color: #0f0; padding: 10px; }
-        #log { height: 80vh; overflow-y: scroll; white-space: pre-wrap; border: 1px solid #444; padding: 10px; margin-bottom: 10px; }
-        .error { color: red; }
-        button { background: #111; color: #0f0; border: 1px solid #0f0; padding: 5px 10px; margin-right: 5px; cursor: pointer; }
-        button:hover { background: #222; }
-      </style>
-    </head>
-    <body>
-      <h2>📜 GoatBot Logs (Realtime)</h2>
-      <div id="log">Loading...</div>
-      <div>
-        <button onclick="copyLogs()">📋 Copy</button>
-        <a href="/logs.txt" download><button>📥 Download</button></a>
-        <button onclick="scrollToTop()">⬆️ Top</button>
-        <button onclick="scrollToBottom()">⬇️ Bottom</button>
-        <button onclick="toggleAutoScroll()">🔁 Autoscroll: <span id="autoscroll-status">ON</span></button>
-      </div>
-
-      <script>
-        const log = document.getElementById("log");
-        let autoScroll = true;
-
-        // Load initial logs
-        fetch("/logs.txt")
-          .then(r => r.text())
-          .then(t => {
-            log.innerHTML = colorize(t);
-            if (autoScroll) log.scrollTop = log.scrollHeight;
-          });
-
-        // WebSocket
-        const ws = new WebSocket("wss://" + location.host);
-        ws.onmessage = e => {
-          const line = colorize(e.data);
-          log.innerHTML += "<br>" + line;
-          if (autoScroll) log.scrollTop = log.scrollHeight;
-        };
-
-        // Highlight errors
-        function colorize(text) {
-          return text.replace(/\\n/g, "<br>").replace(/\.*?ERROR.*?\/gi, match => \`<span class="error">\${match}</span>\`);
-        }
-
-        // Scroll & copy
-        function scrollToTop() {
-          log.scrollTop = 0;
-        }
-
-        function scrollToBottom() {
-          log.scrollTop = log.scrollHeight;
-        }
-
-        function toggleAutoScroll() {
-          autoScroll = !autoScroll;
-          document.getElementById("autoscroll-status").textContent = autoScroll ? "ON" : "OFF";
-        }
-
-        function copyLogs() {
-          const temp = document.createElement("textarea");
-          temp.value = log.textContent;
-          document.body.appendChild(temp);
-          temp.select();
-          document.execCommand("copy");
-          document.body.removeChild(temp);
-          alert("✅ Logs copied to clipboard!");
-        }
-      </script>
-    </body>
-  </html>
-  `);
-});
-
-// Serve logs.txt for download
-app.use("/logs.txt", express.static(logPath));
-
-// Start web server
-server.listen(port, () => {
-  console.log(`📡 Web server running at http://localhost:${port}`);
-});
-
-// Start Goat.js and capture logs
-function startProject() {
-  console.log("[DEBUG] 𝐒𝐭𝐚𝐫𝐭𝐢𝐧𝐠 𝐁𝐨𝐭...");
-
-  const child = spawn("node", ["Goat.js"], {
-    cwd: __dirname,
-    shell: true
-  });
-
-  child.stdout.on("data", (data) => {
-    const msg = data.toString().trim();
-    console.log("[𝐀𝐫𝐚𝐟𝐚𝐭 𝐒𝐚𝐫𝐝𝐞𝐫]", msg);
-  });
-
-  child.stderr.on("data", (data) => {
-    const err = data.toString().trim();
-    console.log("[CMD LOADING]", err);
-  });
-
-  child.on("close", (code) => {
-    console.log(`[Goat.js] Exited with code ${code}`);
-    if (code == 2) {
-      log.info("Restarting Project...");
-      startProject();
-    }
-  });
-
-  child.on("error", (err) => {
-    console.log("[ERROR] Failed to start Arafat.js:", err.message);
-  });
+// Install newer node version on some old Repls
+function upNodeReplit() {
+    return new Promise((resolve) => {
+        execSync(
+            "npm i --save-dev node@16 && npm config set prefix=$(pwd)/node_modules/node && export PATH=$(pwd)/node_modules/node/bin:$PATH"
+        );
+        resolve();
+    });
 }
 
-startProject();
+(async () => {
+    if (process.version.slice(1).split(".")[0] < 16) {
+        if (isReplit) {
+            try {
+                logger.warn("Installing Node.js v16 for Repl.it...");
+                await upNodeReplit();
+                if (process.version.slice(1).split(".")[0] < 16)
+                    throw new Error("Failed to install Node.js v16.");
+            } catch (err) {
+                logger.error(err);
+                process.exit(0);
+            }
+        }
+        logger.error(
+            "Xavia requires Node 16 or higher. Please update your version of Node."
+        );
+        process.exit(0);
+    }
+
+    if (isGlitch) {
+        const WATCH_FILE = {
+            restart: {
+                include: ["\\.json"],
+            },
+            throttle: 3000,
+        };
+
+        if (
+            !existsSync(process.cwd() + "/watch.json") ||
+            !statSync(process.cwd() + "/watch.json").isFile()
+        ) {
+            logger.warn("Glitch environment detected. Creating watch.json...");
+            writeFileSync(
+                process.cwd() + "/watch.json",
+                JSON.stringify(WATCH_FILE, null, 2)
+            );
+            execSync("refresh");
+        }
+    }
+
+    if (isGitHub) {
+        logger.warn("Running on GitHub is not recommended.");
+    }
+})();
+
+// =======================
+// CHECK UPDATE
+// =======================
+async function checkUpdate() {
+    logger.custom("Checking for updates...", "UPDATE");
+    try {
+        const res = await axios.get(
+            "https://raw.githubusercontent.com/XaviaTeam/XaviaBot/main/package.json"
+        );
+
+        const { version } = res.data;
+        const currentVersion = JSON.parse(
+            readFileSync("./package.json")
+        ).version;
+
+        if (semver.lt(currentVersion, version)) {
+            logger.warn(`New version available: ${version}`);
+            logger.warn(`Current version: ${currentVersion}`);
+        } else {
+            logger.custom("No updates available.", "UPDATE");
+        }
+    } catch (err) {
+        logger.error("Failed to check for updates.");
+    }
+}
+
+// =======================
+// MQTT REFRESH HANDLER
+// =======================
+const ONE_HOUR = 60 * 60 * 1000;
+
+function refreshListenMQTT() {
+    try {
+        if (global.listenmqtt) {
+            if (typeof global.listenmqtt === "function") {
+                global.listenmqtt();
+                logger.custom("listenmqtt callback refreshed.", "MQTT");
+            }
+        } else {
+            logger.warn("listenmqtt not found, skipping refresh.");
+        }
+    } catch (err) {
+        logger.error("Failed to refresh listenmqtt callback.");
+    }
+}
+
+// =======================
+// MAIN
+// =======================
+async function main() {
+    await checkUpdate();
+    await loadPlugins();
+
+    const child = spawn(
+        "node",
+        [
+            "--trace-warnings",
+            "--experimental-import-meta-resolve",
+            "--expose-gc",
+            "core/_build.js",
+        ],
+        {
+            cwd: process.cwd(),
+            stdio: "inherit",
+            env: process.env,
+        }
+    );
+
+    // ⛔ لا إعادة تشغيل تلقائي
+    child.on("close", (code) => {
+        console.log();
+        logger.error(`XaviaBot stopped with exit code ${code}`);
+        logger.warn("Auto-restart is disabled. Press Ctrl + C to exit.");
+    });
+
+    // 🔄 تحديث listenmqtt كل ساعة بدون restart
+    setInterval(refreshListenMQTT, ONE_HOUR);
+}
+
+main();
