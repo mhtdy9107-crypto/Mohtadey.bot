@@ -1,156 +1,125 @@
 const config = {
     name: "اعدادات",
     aliases: ["setting"],
-    description: "Settings for better group management",
-    usage: "",
+    description: "🛡 إعدادات حماية المجموعة",
     cooldown: 3,
     permissions: [1],
     credits: "ᏕᎥᏁᎨᎧ",
 };
 
 const langData = {
-    vi_VN: {
-        menu: "⌈ CÀI ĐẶT NHÓM ⌋\n\n1. [{antiSpam}] Chống Spam\n2. [{antiOut}] Chống Rời Nhóm\n3. [{antiChangeGroupName}] Chống Đổi Tên Nhóm\n4. [{antiChangeGroupImage}] Chống Đổi Ảnh Nhóm\n5. [{antiChangeNickname}] Chống Đổi Nickname\n\n6. [{notifyChange}] Thông báo các sự kiện nhóm\n\n⇒ Reply với các số thứ tự để chọn cài đặt bạn muốn thay đổi",
-
-        DataNotReady:
-            "Dữ liệu chưa sẵn sàng, vui lòng thử lại sau\nHoặc dùng lệnh: ${prefix}refresh và thử lại",
-        notGroup: "Lệnh này chỉ có thể được sử dụng trong nhóm!",
-        error: "Đã xảy ra lỗi, vui lòng thử lại sau",
-
-        invalid: "Nhập liệu không hợp lệ",
-        botNotAdmin:
-            "Bot không có quyền quản lý nhóm nên cài đặt antispam và antiout sẽ bị bỏ qua",
-
-        newSettings:
-            "Cài đặt mới:\n\n1. [{antiSpam}] Chống Spam\n2. [{antiOut}] Chống Rời Nhóm\n3. [{antiChangeGroupName}] Chống Đổi Tên Nhóm\n4. [{antiChangeGroupImage}] Chống Đổi Ảnh Nhóm\n5. [{antiChangeNickname}] Chống Đổi Nickname\n\n6. [{notifyChange}] Thông báo các sự kiện nhóm\n\n⇒ React 👍 để lưu cài đặt mới",
-
-        success: "Đã thay đổi cài đặt thành công",
-    },
-    en_US: {
-        menu: "⌈ GROUP SETTINGS ⌋\n\n1. [{antiSpam}] Anti Spam\n2. [{antiOut}] Anti Out\n3. [{antiChangeGroupName}] Anti Change Group Name\n4. [{antiChangeGroupImage}] Anti Change Group Image\n5. [{antiChangeNickname}] Anti Change Nickname\n\n6. [{notifyChange}] Notify group events\n\n⇒ Reply with numbers to choose the setting you want to change",
-        DataNotReady:
-            "Data is not ready, please try again later\nOr use: ${prefix}refresh and try again",
-        notGroup: "This command can only be used in group!",
-        error: "An error occurred, please try again later",
-
-        invalid: "Invalid input",
-        botNotAdmin:
-            "Bot is not admin in this group, so antispam and antiout will be ignored",
-
-        newSettings:
-            "New setting:\n\n1. [{antiSpam}] Anti Spam\n2. [{antiOut}] Anti Out\n3. [{antiChangeGroupName}] Anti Change Group Name\n4. [{antiChangeGroupImage}] Anti Change Group Image\n5. [{antiChangeNickname}] Anti Change Nickname\n\n6. [{notifyChange}] Notify group events\n\n⇒ React 👍 to save the new settings",
-
-        success: "Successfully changed settings",
-    },
     ar_SY: {
-        menu: "⌈🛡 اعـدادات الـمـجـموعـة 🛡⌋\n\n1. [{antiSpam}] مكافحة الازعاج\n2. [{antiOut}] مكافحة الخروج\n3. [{antiChangeGroupName}] مكافحة تغيير اسم المجموعة\n4. [{antiChangeGroupImage}] مكافحة تغيير صورة المجموعة\n5. [{antiChangeNickname}] مكافحة تغيير الكنية\n\n6. [{notifyChange}] اخطار احداث المجموعة\n\n⇒ رد بأرقام لاختيار الإعداد الذي تريد تغييره",
-        DataNotReady:
-            "البيانات ليست جاهزة ، يرجى المحاولة مرة أخرى في وقت لاحق\nاو استعمل: ${prefix}قم بالتحديث وحاول مرة أخرى",
-        notGroup: "لا يمكن استخدام هذا الأمر إلا في المجموعة!",
-        error: "لقد حدث خطأ، رجاء أعد المحاولة لاحقا",
+        menu:
+`╭━〔 🛡 إعدادات المجموعة 🛡 〕━╮
 
-        invalid: "مدخل غير صالح",
+① [{antiSpam}] ✦ مكافحة السبام
+② [{antiOut}] ✦ منع الخروج
+③ [{antiChangeGroupName}] ✦ حماية اسم المجموعة
+④ [{antiChangeGroupImage}] ✦ حماية صورة المجموعة
+⑤ [{antiChangeNickname}] ✦ حماية الكُنى
+⑥ [{notifyChange}] ✦ إشعارات الأحداث
+
+╰━━━━━━━━━━━━━━━━━━━━╯
+↫ رد بالأرقام لتغيير الإعدادات`,
+
+        warnings: {
+            antiSpam: "﹝سبام﹞: ممنوع السبام، التكرار قد يؤدي للطرد",
+            antiOut: " ﹝خروج﹞: ماشي وين يا عب يا عب بل بس هنا ",
+            antiChangeGroupName: "﹝مجموعة﹞: يمنع تغيير اسم المجموعة",
+            antiChangeGroupImage: "﹝تحذير﹞: يمنع تغيير صورة المجموعة",
+            antiChangeNickname: "تغير الكنيات غير مسموح به ﹝كنيات﹞",
+        },
+
+        notGroup: "❌ هذا الأمر يعمل داخل المجموعات فقط",
+        invalid: "❌ اختيار غير صالح",
+        success: "✅ تم حفظ الإعدادات بنجاح",
+        error: "❌ حدث خطأ",
         botNotAdmin:
-            "البوت ليس ادمن في هذه المجموعة ، لذلك سيتم تجاهل مكافحة الازعاج ومكافحة الخروج",
+            "⚠️ البوت ليس مشرفاً، سيتم تعطيل السبام ومنع الخروج",
+        confirm:
+`╭━━〔 ⚙️ الإعدادات الجديدة 〕━━╮
 
-        newSettings:
-            "اعدادات جديدة:\n\n1. [{antiSpam}] مكافحة الازعاج\n2. [{antiOut}] مكافحة الخروج\n3. [{antiChangeGroupName}] مكافحة تغيير اسم المجموعة\n4. [{antiChangeGroupImage}] مكافحة تغيير صورة المجموعة\n5. [{antiChangeNickname}] مكافحة تغيير الكنية\n\n6. [{notifyChange}] اخطار احداث المجموعة\n\n⇒ تفاعل ب 👍 لحفظ الاعدادات الجديدة",
+① [{antiSpam}] مكافحة السبام
+② [{antiOut}] منع الخروج
+③ [{antiChangeGroupName}] حماية الاسم
+④ [{antiChangeGroupImage}] حماية الصورة
+⑤ [{antiChangeNickname}] حماية الكنية
+⑥ [{notifyChange}] إشعارات
 
-        success: "تم تغيير الاعدادات بنجاح",
+╰━━━━━━━━━━━━━━╯
+👍 اضغط حفظ`,
     },
 };
 
-async function confirmChange({ message, getLang, data, eventData }) {
-    const { reaction } = message;
-    if (reaction != "👍") return;
+async function confirmChange({ message, getLang, eventData }) {
+    if (message.reaction !== "👍") return;
 
     const { newSettings } = eventData;
-    if (!newSettings || !data?.thread?.info)
-        return message.send(getLang("error"));
+    await global.controllers.Threads.updateData(message.threadID, {
+        antiSettings: newSettings,
+    });
 
-    try {
-        await global.controllers.Threads.updateData(message.threadID, {
-            antiSettings: newSettings,
-        });
-
-        message.send(getLang("success"));
-    } catch (e) {
-        console.error(e || "WTF");
-        message.send(getLang("error"));
-    }
+    await message.send(getLang("success"));
 }
 
 async function chooseMenu({ message, getLang, data }) {
-    try {
-        let chosenIndexes = message.args.filter(
-            (e) => !!e && !isNaN(e) && e > 0 && e <= 6
-        );
+    const choices = message.args
+        .map(Number)
+        .filter((n) => n >= 1 && n <= 6);
 
-        if (chosenIndexes.length == 0) return message.reply(getLang("invalid"));
-        const _THREAD = data?.thread;
-        if (!_THREAD) return message.reply(getLang("error"));
+    if (!choices.length) return message.reply(getLang("invalid"));
 
-        const _THREAD_DATA = _THREAD.data;
-        const _THREAD_DATA_ANTI_SETTINGS = _THREAD_DATA?.antiSettings;
+    const current = data.thread.data?.antiSettings || {};
+    const keys = [
+        "antiSpam",
+        "antiOut",
+        "antiChangeGroupName",
+        "antiChangeGroupImage",
+        "antiChangeNickname",
+        "notifyChange",
+    ];
 
-        const newSettings = {
-            antiSpam: !!_THREAD_DATA_ANTI_SETTINGS?.antiSpam,
-            antiOut: !!_THREAD_DATA_ANTI_SETTINGS?.antiOut,
-            antiChangeGroupName:
-                !!_THREAD_DATA_ANTI_SETTINGS?.antiChangeGroupName,
-            antiChangeGroupImage:
-                !!_THREAD_DATA_ANTI_SETTINGS?.antiChangeGroupImage,
-            antiChangeNickname:
-                !!_THREAD_DATA_ANTI_SETTINGS?.antiChangeNickname,
+    const newSettings = {};
+    for (const k of keys)
+        newSettings[k] = !!current[k];
 
-            notifyChange: !!_THREAD_DATA_ANTI_SETTINGS?.notifyChange,
-        };
+    for (const c of choices) {
+        const key = keys[c - 1];
+        newSettings[key] = !newSettings[key];
 
-        let settingsKeys = Object.keys(newSettings);
-        for (const _index of chosenIndexes) {
-            const _key = settingsKeys[_index - 1];
-            newSettings[_key] = !newSettings[_key];
-        }
-
-        let isBotAdmin = data?.thread?.info?.adminIDs?.some(
-            (e) => e == global.botID
-        );
-        if (!isBotAdmin && (newSettings.antiSpam || newSettings.antiOut)) {
-            newSettings.antiOut = false;
-            newSettings.antiSpam = false;
-
-            await message.reply(getLang("botNotAdmin"));
-        }
-
-        const _newSettings = {};
-
-        for (const _key of settingsKeys) {
-            _newSettings[_key] = newSettings[_key] ? "✅" : "❌";
-        }
-
-        const _newMessage = await message.reply(
-            getLang("newSettings", { ..._newSettings })
-        );
-        _newMessage.addReactEvent({
-            callback: confirmChange,
-            newSettings,
-            participantIDs: message.participantIDs,
-        });
-    } catch (e) {
-        console.error(e || "WTFFF");
-        message.reply(getLang("error"));
+        // ⚠️ إرسال رسالة التحذير الخاصة بالإعداد
+        if (langData.ar_SY.warnings[key])
+            await message.send(langData.ar_SY.warnings[key]);
     }
+
+    const isBotAdmin = data.thread.info.adminIDs.includes(global.botID);
+    if (!isBotAdmin) {
+        newSettings.antiSpam = false;
+        newSettings.antiOut = false;
+        await message.reply(getLang("botNotAdmin"));
+    }
+
+    const display = {};
+    for (const k of keys)
+        display[k] = newSettings[k] ? "✅" : "❌";
+
+    const msg = await message.reply(
+        getLang("confirm", display)
+    );
+
+    msg.addReactEvent({
+        callback: confirmChange,
+        newSettings,
+    });
 }
 
-async function onCall({ message, getLang, data, prefix }) {
-    if (!data?.thread?.info)
-        return message.reply(getLang("DataNotReady", { prefix }));
-    if (!data.thread.info.isGroup) return message.reply(getLang("notGroup"));
+async function onCall({ message, getLang, data }) {
+    if (!data.thread?.info?.isGroup)
+        return message.reply(getLang("notGroup"));
 
-    const _THREAD_DATA_ANTI_SETTINGS = {
-        ...(data.thread.data?.antiSettings || {}),
-    };
-    for (const _key of [
+    const settings = data.thread.data?.antiSettings || {};
+    const show = {};
+    for (const k of [
         "antiSpam",
         "antiOut",
         "antiChangeGroupName",
@@ -158,18 +127,11 @@ async function onCall({ message, getLang, data, prefix }) {
         "antiChangeNickname",
         "notifyChange",
     ]) {
-        _THREAD_DATA_ANTI_SETTINGS[_key] = _THREAD_DATA_ANTI_SETTINGS[_key]
-            ? "✅"
-            : "❌";
+        show[k] = settings[k] ? "✅" : "❌";
     }
 
-    return message
-        .reply(getLang("menu", { ..._THREAD_DATA_ANTI_SETTINGS }))
-        .then((_) => _.addReplyEvent({ callback: chooseMenu }))
-        .catch((e) => {
-            console.error(e || "WTFFF");
-            message.reply(getLang("error"));
-        });
+    const msg = await message.reply(getLang("menu", show));
+    msg.addReplyEvent({ callback: chooseMenu });
 }
 
 export default {
