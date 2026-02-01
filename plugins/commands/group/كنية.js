@@ -1,28 +1,28 @@
 export const config = {
     name: "كنية",
-    version: "0.0.2-xaviaBot-port",
-    permissions: [1, 2], // أدمن فقط
+    version: "0.0.3-xaviaBot-port",
+    permissions: [2], // مسؤولي المجموعات فقط
     credits: "Mirai Team",
-    description: "تغيير كنية عضو في المجموعة",
+    description: "تغيير أو مسح كنية عضو في المجموعة",
     usage: "كنية <الاسم> (بالرد أو المنشن)",
     cooldowns: 3
 };
 
 export async function onCall({ message, args }) {
-    const nickname = args.join(" ");
-    if (!nickname) return message.reply("✖️ اكتب الكنية الجديدة");
+    // لو ما في اسم → مسح الكنية
+    const nickname = args.length > 0 ? args.join(" ") : "";
 
     let targetID;
 
-    // 1️⃣ لو في رد على رسالة
+    // رد
     if (message.type === "message_reply") {
         targetID = message.messageReply.senderID;
     }
-    // 2️⃣ لو في منشن
+    // منشن
     else if (Object.keys(message.mentions).length > 0) {
         targetID = Object.keys(message.mentions)[0];
     }
-    // 3️⃣ لو ما في رد ولا منشن (غيّر كنيتك إنت)
+    // نفسه
     else {
         targetID = message.senderID;
     }
@@ -33,8 +33,8 @@ export async function onCall({ message, args }) {
             message.threadID,
             targetID
         );
-        message.reply("✅ تم تغيير الكنية بنجاح");
+        // 🔕 بدون أي رسالة نجاح
     } catch (err) {
         message.reply("❌ حصل خطأ، تأكد إنو البوت أدمن");
     }
-}
+            }
