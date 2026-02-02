@@ -1,33 +1,43 @@
-import axios from "axios";
 import fs from "fs";
-import path from "path";
 
 const config = {
     name: "كنيات",
-    description: "تعيين كنية موحدة لـ 250 عضو مع استبدال كلمة اسم بالاسم الأول",
+    description: "تعيين كنية حسب الجنس مع استبدال اسم + تسريع التنفيذ",
     usage: "كنيات <النمط>",
-    cooldown: 20,
+    cooldown: 15,
     permissions: [2],
-    credits: "Gemini",
+    credits: "Gemini + تعديل",
 };
 
 const langData = {
     ar_SY: {
         notGroup: "❌ هذا الأمر يعمل داخل المجموعات فقط",
-        notOwner: "⚠️ عذراً، هذا الأمر مخصص لمطور البوت فقط.",
+        notOwner: "⚠️ هذا الأمر مخصص لمطور البوت فقط",
         missingTemplate:
-            "⚠️ يرجى كتابة التنسيق المطلوب مع كلمة (اسم)\n\nمثال:\nكنيات 『 「✽」 اسم ↩ نينجا ⁰ 』",
-        start:
-            "⏳ جاري بدء العملية لـ {count} عضو...\n⚠️ سوان يا مظه ",
+            "⚠️ لازم تكتب تنسيق فيه كلمة (اسم)\n\nمثال:\nكنيات ﹝اسم﹞ فدلبي ﹝جندي﹞🦧",
+        start: "⏳ جاري تغيير كنيات {count} عضو...",
         done:
-            "✅ اكتملت العملية!\n\n✔️ تم تغيير: {success}\n📝 التنسيق:\n{template}",
-        error: "❌ حدث خطأ في النظام",
+            "✅ تم الانتهاء!\n\n✔️ تم التغيير: {success}\n📝 التنسيق:\n{template}",
+        error: "❌ حصل خطأ في التنفيذ",
     },
 };
 
+// 🔍 تحديد الجنس من الاسم (تقريبي لكنه عملي)
+function detectGender(firstName) {
+    if (!firstName) return "male";
+
+    return /[ةىا]$/.test(firstName) ? "female" : "male";
+}
+
+// 🔄 تحويل الكلمة إلى مؤنث
+function feminize(word) {
+    if (word.endsWith("ة")) return word;
+    return word + "ة";
+}
+
 async function onCall({ message, getLang }) {
     try {
-        if (!message || !message.isGroup)
+        if (!message?.isGroup)
             return message.reply(getLang("notGroup"));
 
         const { threadID, senderID, args, reply } = message;
@@ -36,24 +46,15 @@ async function onCall({ message, getLang }) {
         if (senderID !== OWNER_ID)
             return reply(getLang("notOwner"));
 
-        // ✅ إزالة اسم الأمر فقط (أول كلمة)
         const template = args.slice(1).join(" ");
-
         if (!template || !template.includes("اسم"))
             return reply(getLang("missingTemplate"));
 
-        // ✅ جلب معلومات المجموعة
         const threadInfo = await global.api.getThreadInfo(threadID);
-        if (!threadInfo || !threadInfo.participantIDs)
-            return reply(getLang("error"));
+        const userIDs = threadInfo?.participantIDs?.slice(0, 250);
+        if (!userIDs) return reply(getLang("error"));
 
-        const userIDs = threadInfo.participantIDs.slice(0, 250);
-
-        reply(
-            getLang("start", {
-                count: userIDs.length,
-            })
-        );
+        reply(getLang("start", { count: userIDs.length }));
 
         let success = 0;
 
@@ -63,22 +64,28 @@ async function onCall({ message, getLang }) {
                 const fullName = info[uid]?.name || "عضو";
                 const firstName = fullName.split(" ")[0];
 
-                // ✅ استبدال كلمة (اسم) باسم العضو
-                const nickname = template.replace(
-                    /[\(\[\{\<\«『「]*اسم[\)\}\]\>\»』」]*/g,
+                const gender = detectGender(firstName);
+
+                let nickname = template.replace(
+                    /[\(\[\{\<\«『「﹝]*اسم[\)\}\]\>\»』」﹞]*/g,
                     firstName
                 );
 
-                await global.api.changeNickname(
-                    nickname,
-                    threadID,
-                    uid
-                );
+                // 🔥 تعديل آخر كلمة حسب الجنس
+                if (gender === "female") {
+                    nickname = nickname.replace(
+                        /(جندي|مواطن|طالب|مدير)\b/g,
+                        (w) => feminize(w)
+                    );
+                }
 
+                await global.api.changeNickname(nickname, threadID, uid);
                 success++;
-                await new Promise((r) => setTimeout(r, 1500));
+
+                // ⚡ تسريع (نصف ثانية)
+                await new Promise((r) => setTimeout(r, 500));
             } catch (e) {
-                // تجاهل الخطأ الفردي (عضو ما بيتغير أو البوت ما عنده صلاحية)
+                // تجاهل العضو اللي ما بتتغير كنيته
             }
         }
 
