@@ -16,10 +16,10 @@ const langData = {
         noQuery: "❌ اكتب اسم الأغنية\nمثال: sing Starboy",
         searching: "🔎 جاري البحث عن الأغنية...",
         notFound: "❌ لم يتم العثور على نتائج",
-        downloading: "⬇️ جاري التحميل...",
-        sending: "📤 جاري الإرسال...",
-        failedDownload: "❌ فشل في تحميل الأغنية",
-        error: "❌ حصل خطأ أثناء تنفيذ الطلب",
+        downloading: "⬇️ جاري تحميل الأغنية...",
+        sending: "📤 جاري إرسال الأغنية...",
+        failedDownload: "❌ فشل تحميل الأغنية",
+        error: "❌ حصل خطأ أثناء تنفيذ الأمر",
         caption:
 `🎶 {title}
 👤 الفنان: {author}
@@ -36,8 +36,9 @@ async function onCall({ message, args }) {
     try {
         statusMsg = await message.reply(langData.ar_SY.searching);
 
+        // 🔎 البحث
         const searchRes = await axios.get(
-            `https://hridoy-apis.vercel.app/search/youtube`,
+            "https://hridoy-apis.vercel.app/search/youtube",
             {
                 params: {
                     query,
@@ -52,49 +53,45 @@ async function onCall({ message, args }) {
             return message.edit(langData.ar_SY.notFound, statusMsg.messageID);
         }
 
-        let mostViewed = results.reduce((a, b) =>
-            (b.views || 0) > (a.views || 0) ? b : a
-        );
+        const video = results[0];
 
+        // ⬇️ تحميل MP3 (المسار الصحيح)
         await message.edit(langData.ar_SY.downloading, statusMsg.messageID);
 
         const downRes = await axios.get(
-            `https://hridoy-apis.vercel.app/downloader/ytmp4`,
+            "https://hridoy-apis.vercel.app/downloader/ytmp3",
             {
                 params: {
-                    url: mostViewed.url,
-                    format: "mp3",
+                    url: video.url,
                     apikey: "hridoyXQC",
                 },
             }
         );
 
-        const downloadUrl = downRes.data?.result?.download;
-        if (!downloadUrl)
-            return message.edit(
-                langData.ar_SY.failedDownload,
-                statusMsg.messageID
-            );
+        const downloadUrl = downRes.data?.result?.downloadUrl;
+        if (!downloadUrl) {
+            return message.edit(langData.ar_SY.failedDownload, statusMsg.messageID);
+        }
 
         await message.edit(langData.ar_SY.sending, statusMsg.messageID);
 
+        // 📁 حفظ مؤقت
         const cacheDir = path.join(process.cwd(), "cache");
         await fs.ensureDir(cacheDir);
+
         const filePath = path.join(cacheDir, `sing_${Date.now()}.mp3`);
 
         const audio = await axios.get(downloadUrl, {
             responseType: "arraybuffer",
-            timeout: 60000,
+            timeout: 120000,
         });
+
         await fs.writeFile(filePath, audio.data);
 
         const body = langData.ar_SY.caption
-            .replace("{title}", downRes.data.result.title || mostViewed.title)
-            .replace("{author}", mostViewed.author || "Unknown")
-            .replace(
-                "{views}",
-                mostViewed.views?.toLocaleString?.() || "N/A"
-            );
+            .replace("{title}", video.title || "Unknown")
+            .replace("{author}", video.author || "Unknown")
+            .replace("{views}", video.views?.toLocaleString() || "N/A");
 
         await message.send({
             body,
@@ -105,7 +102,7 @@ async function onCall({ message, args }) {
         await message.unsend(statusMsg.messageID);
 
     } catch (err) {
-        console.error("[sing]", err);
+        console.error("[sing error]", err);
         if (statusMsg?.messageID)
             await message.edit(langData.ar_SY.error, statusMsg.messageID);
         else
