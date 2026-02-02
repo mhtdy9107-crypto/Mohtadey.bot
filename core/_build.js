@@ -13,7 +13,6 @@ import initializeVar from "./var/_init.js";
 import { getLang, loadPlugins } from "./var/modules/loader.js";
 
 import * as aes from "./var/modules/aes.js";
-
 import { checkAppstate } from "./var/modules/checkAppstate.js";
 
 import replitDB from "@replit/database";
@@ -23,190 +22,180 @@ import { Assets } from "./handlers/assets.js";
 
 import crypto from "crypto";
 
-process.stdout.write(String.fromCharCode(27) + "]0;" + "Xavia" + String.fromCharCode(7));
-
-process.on("unhandledRejection", (reason, p) => {
-    console.error(reason, "Unhandled Rejection at Promise", p);
+/* =======================
+   GLOBAL PROTECTION
+======================= */
+process.on("unhandledRejection", (err) => {
+  logger.error("Unhandled Rejection:");
+  console.error(err);
 });
 
-process.on("uncaughtException", (err, origin) => {
-    logger.error("Uncaught Exception: " + err + ": " + origin);
+process.on("uncaughtException", (err) => {
+  logger.error("Uncaught Exception:");
+  console.error(err);
 });
 
-process.on("SIGINT", () => {
+process.on("SIGINT", shutdownSafe);
+process.on("SIGTERM", shutdownSafe);
+process.on("SIGHUP", shutdownSafe);
+
+function shutdownSafe() {
+  try {
     logger.system(getLang("build.start.exit"));
-    global.shutdown();
-});
+    if (global.listenMqtt?.stopListening) {
+      global.listenMqtt.stopListening();
+    }
+  } catch {}
+  process.exit(0);
+}
 
-process.on("SIGTERM", () => {
-    logger.system(getLang("build.start.exit"));
-    global.shutdown();
-});
+process.stdout.write(
+  String.fromCharCode(27) + "]0;" + "Xavia" + String.fromCharCode(7)
+);
 
-process.on("SIGHUP", () => {
-    logger.system(getLang("build.start.exit"));
-    global.shutdown();
-});
-
+/* =======================
+   INIT
+======================= */
 await initializeVar();
 
+/* =======================
+   START BOT
+======================= */
 async function start() {
-    try {
-        console.clear();
-        logger.system(getLang("build.start.varLoaded"));
-        logger.custom(getLang("build.start.logging"), "LOGIN");
+  try {
+    console.clear();
+    logger.system(getLang("build.start.varLoaded"));
+    logger.custom(getLang("build.start.logging"), "LOGIN");
 
-        const api = await loginState();
-        global.api = api;
-        global.botID = api.getCurrentUserID();
+    const api = await loginState();
+    global.api = api;
+    global.botID = api.getCurrentUserID();
 
-        logger.custom(getLang("build.start.logged", { botID }), "LOGIN");
-
-        console.log();
-        const xDatabase = new XDatabase(api, global.config.DATABASE);
-        await xDatabase.init();
-        console.log();
-
-        new Assets();
-        logger.custom(getLang("build.start.plugin.loading"), "LOADER");
-        await loadPlugins(xDatabase);
-
-        const serverAdminPassword = getRandomPassword(8);
-        startServer(serverAdminPassword);
-
-        process.env.SERVER_ADMIN_PASSWORD = serverAdminPassword;
-
-        await booting(api, xDatabase);
-    } catch (err) {
-        logger.error(err);
-        return global.shutdown();
-    }
-}
-
-global.listenerID = null;
-
-/**
- * @param {import("@xaviabot/fca-unofficial").IFCAU_API} api
- * @param {xDatabase} xDatabase
- */
-async function booting(api, xDatabase) {
-    try {
-        global.controllers = {
-            Threads: xDatabase.threads,
-            Users: xDatabase.users,
-        };
-
-        refreshState();
-        const refreshDelay = parseInt(global.config.REFRESH);
-        if (refreshDelay > 0) autoReloadApplication(refreshDelay);
-
-        const newListenerID = generateListenerID();
-        global.listenerID = newListenerID;
-        global.listenMqtt = api.listenMqtt(await handleListen(newListenerID, xDatabase));
-
-        refreshMqtt(xDatabase);
-    } catch (error) {
-        const glitchAppstatePath = resolvePath(process.cwd(), ".data", "appstate.json");
-
-        if (isGlitch && global.isExists(glitchAppstatePath, "file")) {
-            global.deleteFile(glitchAppstatePath);
-            execSync("refresh");
-        }
-
-        throw error;
-    }
-}
-
-const _12HOUR = 1000 * 60 * 60 * 12;
-const _2HOUR = 1000 * 60 * 60 * 2;
-function refreshState() {
-    global.refreshState = setInterval(() => {
-        logger.custom(getLang("build.refreshState"), "REFRESH");
-        const newAppState = global.api.getAppState();
-        if (global.config.APPSTATE_PROTECTION === true) {
-            if (isGlitch) {
-                writeFileSync(
-                    resolvePath(process.cwd(), ".data", "appstate.json"),
-                    JSON.stringify(newAppState, null, 2),
-                    "utf-8"
-                );
-            } else if (isReplit) {
-                let APPSTATE_SECRET_KEY;
-                let db = new replitDB();
-                db.get("APPSTATE_SECRET_KEY")
-                    .then((value) => {
-                        if (value !== null) {
-                            APPSTATE_SECRET_KEY = value;
-                            const encryptedAppState = aes.encrypt(
-                                JSON.stringify(newAppState),
-                                APPSTATE_SECRET_KEY
-                            );
-                            writeFileSync(
-                                resolvePath(global.config.APPSTATE_PATH),
-                                JSON.stringify(encryptedAppState),
-                                "utf8"
-                            );
-                        }
-                    })
-                    .catch((err) => {
-                        console.error(err);
-                    });
-            }
-        } else {
-            writeFileSync(
-                resolvePath(global.config.APPSTATE_PATH),
-                JSON.stringify(newAppState, null, 2),
-                "utf8"
-            );
-        }
-    }, _12HOUR);
-}
-
-/**
- *
- * @param {xDatabase} xDatabase
- */
-function refreshMqtt(xDatabase) {
-    global.refreshMqtt = setInterval(async () => {
-        logger.custom(getLang("build.refreshMqtt"), "REFRESH");
-        const newListenerID = generateListenerID();
-        global.listenMqtt.stopListening();
-        global.listenerID = newListenerID;
-        global.listenMqtt = global.api.listenMqtt(await handleListen(newListenerID, xDatabase));
-    }, _2HOUR);
-}
-
-function generateListenerID() {
-    return Date.now() + crypto.randomBytes(4).toString("hex");
-}
-
-function autoReloadApplication(refreshDelay) {
-    setTimeout(() => global.restart(), refreshDelay);
-}
-
-async function loginState() {
-    const appState = await checkAppstate(
-        global.config.APPSTATE_PATH,
-        global.config.APPSTATE_PROTECTION
+    logger.custom(
+      getLang("build.start.logged", { botID: global.botID }),
+      "LOGIN"
     );
 
-    const options = global.config.FCA_OPTIONS;
+    const xDatabase = new XDatabase(api, global.config.DATABASE);
+    await xDatabase.init();
 
-    // Enhanced Nexus-fCA options for better safety and performance
-    const nexusOptions = {
-        ...options,
-        // Nexus-fCA specific safety features
-        enableSafeHeaders: true,
-        enableHumanBehavior: true,
-        enableAntiDetection: true,
-        enableAutoRefresh: true,
-        enableLoginValidation: true,
-        enableSafeDelays: true,
-        bypassRegionLock: true,
-        ultraLowBanMode: true
-    };
+    new Assets();
+    logger.custom(getLang("build.start.plugin.loading"), "LOADER");
+    await loadPlugins(xDatabase);
 
-    return await login({ appState }, nexusOptions);
+    const serverAdminPassword = getRandomPassword(8);
+    process.env.SERVER_ADMIN_PASSWORD = serverAdminPassword;
+    startServer(serverAdminPassword);
+
+    await booting(api, xDatabase);
+  } catch (err) {
+    logger.error(err);
+    shutdownSafe();
+  }
 }
 
+/* =======================
+   BOOTING
+======================= */
+async function booting(api, xDatabase) {
+  global.controllers = {
+    Threads: xDatabase.threads,
+    Users: xDatabase.users,
+  };
+
+  startListen(api, xDatabase);
+  refreshState(); // فقط حفظ appstate
+}
+
+/* =======================
+   SAFE MQTT (NO REFRESH)
+======================= */
+async function startListen(api, xDatabase) {
+  const listenerID = generateListenerID();
+  global.listenerID = listenerID;
+
+  global.listenMqtt = api.listenMqtt(
+    await handleListen(listenerID, xDatabase)
+  );
+
+  logger.custom("MQTT listener started (stable mode).", "MQTT");
+}
+
+/* =======================
+   APPSTATE SAVE (12H)
+======================= */
+const _12HOUR = 1000 * 60 * 60 * 12;
+
+function refreshState() {
+  setInterval(() => {
+    try {
+      const newAppState = global.api.getAppState();
+
+      if (global.config.APPSTATE_PROTECTION === true) {
+        if (isGlitch) {
+          writeFileSync(
+            resolvePath(process.cwd(), ".data", "appstate.json"),
+            JSON.stringify(newAppState, null, 2)
+          );
+        } else if (isReplit) {
+          const db = new replitDB();
+          db.get("APPSTATE_SECRET_KEY").then((key) => {
+            if (!key) return;
+            const encrypted = aes.encrypt(
+              JSON.stringify(newAppState),
+              key
+            );
+            writeFileSync(
+              resolvePath(global.config.APPSTATE_PATH),
+              JSON.stringify(encrypted)
+            );
+          });
+        }
+      } else {
+        writeFileSync(
+          resolvePath(global.config.APPSTATE_PATH),
+          JSON.stringify(newAppState, null, 2)
+        );
+      }
+    } catch (e) {
+      logger.error("Failed to refresh appstate");
+      console.error(e);
+    }
+  }, _12HOUR);
+}
+
+/* =======================
+   LOGIN
+======================= */
+async function loginState() {
+  const appState = await checkAppstate(
+    global.config.APPSTATE_PATH,
+    global.config.APPSTATE_PROTECTION
+  );
+
+  const options = {
+    ...global.config.FCA_OPTIONS,
+    enableAutoRefresh: false,
+    ultraLowBanMode: true,
+    enableAntiDetection: true,
+    enableHumanBehavior: true,
+  };
+
+  return await login({ appState }, options);
+}
+
+/* =======================
+   UTILS
+======================= */
+function generateListenerID() {
+  return Date.now() + crypto.randomBytes(4).toString("hex");
+}
+
+function getRandomPassword(length = 8) {
+  return crypto.randomBytes(length).toString("hex").slice(0, length);
+}
+
+/* =======================
+   RUN
+======================= */
 start();
