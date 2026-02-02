@@ -1,39 +1,25 @@
-import fs from "fs";
-
 const config = {
     name: "كنيات",
-    description: "تعيين كنية حسب الجنس مع استبدال اسم + تسريع التنفيذ",
+    description: "تعيين كنية موحدة لـ 250 عضو مع استبدال كلمة اسم بالاسم الأول",
     usage: "كنيات <النمط>",
-    cooldown: 15,
+    cooldown: 20,
     permissions: [2],
-    credits: "Gemini + تعديل",
+    credits: "Gemini",
 };
 
 const langData = {
     ar_SY: {
         notGroup: "❌ هذا الأمر يعمل داخل المجموعات فقط",
-        notOwner: "⚠️ هذا الأمر مخصص لمطور البوت فقط",
+        notOwner: "⚠️ عذراً، هذا الأمر مخصص لمطور البوت فقط.",
         missingTemplate:
-            "⚠️ لازم تكتب تنسيق فيه كلمة (اسم)\n\nمثال:\nكنيات ﹝اسم﹞ فدلبي ﹝جندي﹞🦧",
-        start: "⏳ جاري تغيير كنيات {count} عضو...",
+            "⚠️ يرجى كتابة التنسيق المطلوب مع كلمة (اسم)\n\nمثال:\nكنيات 『 「✽」 اسم ↩ نينجا ⁰ 』",
+        start:
+            "⏳ جاري تغيير كنيات {count} عضو...\n⚡ السرعة: محسّنة",
         done:
-            "✅ تم الانتهاء!\n\n✔️ تم التغيير: {success}\n📝 التنسيق:\n{template}",
-        error: "❌ حصل خطأ في التنفيذ",
+            "✅ اكتملت العملية!\n\n✔️ تم تغيير: {success}\n📝 التنسيق:\n{template}",
+        error: "❌ حدث خطأ في النظام",
     },
 };
-
-// 🔍 تحديد الجنس من الاسم (تقريبي لكنه عملي)
-function detectGender(firstName) {
-    if (!firstName) return "male";
-
-    return /[ةىا]$/.test(firstName) ? "female" : "male";
-}
-
-// 🔄 تحويل الكلمة إلى مؤنث
-function feminize(word) {
-    if (word.endsWith("ة")) return word;
-    return word + "ة";
-}
 
 async function onCall({ message, getLang }) {
     try {
@@ -51,42 +37,43 @@ async function onCall({ message, getLang }) {
             return reply(getLang("missingTemplate"));
 
         const threadInfo = await global.api.getThreadInfo(threadID);
-        const userIDs = threadInfo?.participantIDs?.slice(0, 250);
-        if (!userIDs) return reply(getLang("error"));
+        if (!threadInfo?.participantIDs)
+            return reply(getLang("error"));
+
+        const userIDs = threadInfo.participantIDs.slice(0, 250);
 
         reply(getLang("start", { count: userIDs.length }));
 
         let success = 0;
+        const CONCURRENCY = 5; // عدد التغييرات في نفس الوقت
 
-        for (const uid of userIDs) {
-            try {
-                const info = await global.api.getUserInfo(uid);
-                const fullName = info[uid]?.name || "عضو";
-                const firstName = fullName.split(" ")[0];
+        for (let i = 0; i < userIDs.length; i += CONCURRENCY) {
+            const batch = userIDs.slice(i, i + CONCURRENCY);
 
-                const gender = detectGender(firstName);
+            await Promise.all(
+                batch.map(async (uid) => {
+                    try {
+                        const info = await global.api.getUserInfo(uid);
+                        const fullName = info[uid]?.name || "عضو";
+                        const firstName = fullName.split(" ")[0];
 
-                let nickname = template.replace(
-                    /[\(\[\{\<\«『「﹝]*اسم[\)\}\]\>\»』」﹞]*/g,
-                    firstName
-                );
+                        const nickname = template.replace(
+                            /[\(\[\{\<\«『「]*اسم[\)\}\]\>\»』」]*/g,
+                            firstName
+                        );
 
-                // 🔥 تعديل آخر كلمة حسب الجنس
-                if (gender === "female") {
-                    nickname = nickname.replace(
-                        /(جندي|مواطن|طالب|مدير)\b/g,
-                        (w) => feminize(w)
-                    );
-                }
+                        await global.api.changeNickname(
+                            nickname,
+                            threadID,
+                            uid
+                        );
 
-                await global.api.changeNickname(nickname, threadID, uid);
-                success++;
-
-                // ⚡ تسريع (نصف ثانية)
-                await new Promise((r) => setTimeout(r, 500));
-            } catch (e) {
-                // تجاهل العضو اللي ما بتتغير كنيته
-            }
+                        success++;
+                    } catch (_) {
+                        // تجاهل الأخطاء الفردية
+                    }
+                })
+            );
         }
 
         reply(
