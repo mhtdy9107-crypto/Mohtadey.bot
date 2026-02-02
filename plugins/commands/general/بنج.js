@@ -1,28 +1,37 @@
-export default async function ({ message}) {
-  const { performance} = await import("perf_hooks");
+export default async function ({ message }) {
+  const { performance } = await import("perf_hooks");
 
-  const timeStart = performance.now();
+  // إرسال رسالة واحدة
+  const status = await message.reply("⏳ جاري قياس سرعة استجابة البوت...");
 
-  await message.reply("⏳ جاري قياس السرعة...");
-
-  const timeEnd = performance.now();
-  const ping = Math.floor(timeEnd - timeStart);
+  const start = performance.now();
+  const end = performance.now();
+  const ping = Math.floor(end - start);
 
   let level = "";
   let advice = "";
 
   if (ping <= 150) {
-    level = "🔋 عالي";
-    advice = "الاستجابة ممتازة، البوت يعمل بكفاءة عالية.";
-} else if (ping <= 400) {
-    level = "⚡ متوسط";
-    advice = "الاستجابة جيدة، لكن يُفضل تقليل الضغط على البوت.";
-} else {
-    level = "🐢 ضعيف";
-    advice = "الاستجابة بطيئة، قد يكون هناك ضغط على السيرفر أو ضعف في الاتصال.";
-}
+    level = "🔋 ممتاز";
+    advice = "الأمور تمام، البوت شغال بسلاسة واستجابة عالية.";
+  } else if (ping <= 400) {
+    level = "⚡ جيد";
+    advice = "الاستجابة كويسة، لكن يفضّل تخفيف الضغط على البوت.";
+  } else {
+    level = "🐢 بطيء";
+    advice = "في بطء واضح، ممكن يكون ضغط على السيرفر أو مشكلة في الاتصال.";
+  }
 
-  return message.reply(
-    `📶 تم القياس بنجاح!\n\n📍 النتيجة: ${ping}ms\n📊 التصنيف: ${level}\n💡 نصيحة: ${advice}`
-);
-}
+  // تعديل نفس الرسالة
+  await message.edit(
+`╭━〔 📡 فحص السرعة 〕━╮
+┃
+┃ ⏱️ الزمن: ${ping} ms
+┃ 📊 التقييم: ${level}
+┃ 💡 ملاحظة:
+┃ ${advice}
+┃
+╰━━━━━━━━━━━━━━━━━━╯`,
+    status.messageID
+  );
+  }
