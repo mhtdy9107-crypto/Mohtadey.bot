@@ -1,7 +1,7 @@
 export const config = {
     name: "كنية",
     version: "0.0.3-xaviaBot-port",
-    permissions: [2], // مسؤولي المجموعات فقط
+    permissions: [1], // ✅ مسؤولي المجموعات فقط
     credits: "Mirai Team",
     description: "تغيير أو مسح كنية عضو في المجموعة",
     usage: "كنية <الاسم> (بالرد أو المنشن)",
@@ -37,4 +37,4 @@ export async function onCall({ message, args }) {
     } catch (err) {
         message.reply("❌ حصل خطأ، تأكد إنو البوت أدمن");
     }
-            }
+}
