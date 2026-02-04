@@ -75,37 +75,37 @@ ${prefix}${cmd.name} ${cmd.usage || ""}
 ⌈  ADMIN ⌋
 ${formatCmds(adminCmds)}
 
-•◌────˚❀˚───◌ ────˚❀˚────⋄
+•◌────˚❀˚───◌ ────˚❀˚────
 
 ⌈  ECONOMY ⌋
 ${formatCmds(economyCmds)}
 
-•◌────˚❀˚───◌ ────˚❀˚────⋄
+•◌────˚❀˚───◌ ────˚❀˚────
 
 ⌈  ENTERTAINMENT ⌋
 ${formatCmds(entertainmentCmds)}
 
-•◌────˚❀˚───◌ ────˚❀˚────⋄
+•◌────˚❀˚───◌ ────˚❀˚────
 
 ⌈ GENERAL ⌋
 ${formatCmds(generalCmds)}
 
-•◌────˚❀˚───◌ ────˚❀˚────⋄
+•◌────˚❀˚───◌ ────˚❀˚────
 
 ⌈ GROUP ⌋
 ${formatCmds(groupCmds)}
 
-•◌────˚❀˚───◌ ────˚❀˚────⋄
+•◌────˚❀˚───◌ ────˚❀˚────
 
 ⌈ MEDIA ⌋
 ${formatCmds(mediaCmds)}
 
-•◌────˚❀˚───◌ ────˚❀˚────⋄
+•◌────˚❀˚───◌ ────˚❀˚────
 
 ⌈ NSFW ⌋
 ${formatCmds(nsfwCmds)}
 
-•◌────˚❀˚───◌ ────˚❀˚─── ⋄ـ
+•◌────˚❀˚───◌ ────˚❀˚───ـ
 ⇒ 📊 المجموع: ${total} أمر
 ⇒ ℹ️ استخدم: ${prefix}[اسم_الأمر] لعرض التفاصيل
 `;
