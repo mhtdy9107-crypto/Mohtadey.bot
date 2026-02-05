@@ -1,4 +1,4 @@
- RUN "../cleanup.js";
+import "../cleanup.js";
 
 import {} from "dotenv/config";
 import { writeFileSync } from "fs";
