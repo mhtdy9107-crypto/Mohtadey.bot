@@ -1,7 +1,7 @@
 import "../cleanup.js";
 
 import {} from "dotenv/config";
-import { writeFileSync, existsSync } from "fs";
+import { writeFileSync } from "fs";
 import { resolve as resolvePath } from "path";
 import logger from "./var/modules/logger.js";
 
@@ -10,13 +10,14 @@ import startServer from "./dashboard/server/app.js";
 import handleListen from "./handlers/listen.js";
 import { isGlitch, isReplit } from "./var/modules/environments.get.js";
 import initializeVar from "./var/_init.js";
-import { getLang } from "./var/modules/loader.js";
+import { getLang, loadPlugins } from "./var/modules/loader.js";
 
 import * as aes from "./var/modules/aes.js";
 import { checkAppstate } from "./var/modules/checkAppstate.js";
 
 import replitDB from "@replit/database";
 import { XDatabase } from "./handlers/database.js";
+import { Assets } from "./handlers/assets.js";
 
 import crypto from "crypto";
 
@@ -40,13 +41,14 @@ process.on("SIGHUP", shutdownSafe);
 function shutdownSafe() {
   try {
     logger.system(getLang("build.start.exit"));
-    // توقف listener لتوفير RAM
     global.listenMqtt?.stopListening?.();
-    global.controllers = null;
-    global.api = null;
   } catch {}
   process.exit(0);
 }
+
+process.stdout.write(
+  String.fromCharCode(27) + "]0;" + "Xavia" + String.fromCharCode(7)
+);
 
 /* =======================
    INIT
@@ -58,26 +60,31 @@ await initializeVar();
 ======================= */
 async function start() {
   try {
+    console.clear();
     logger.system(getLang("build.start.varLoaded"));
     logger.custom(getLang("build.start.logging"), "LOGIN");
 
     const api = await loginState();
     global.api = api;
     global.botID = api.getCurrentUserID();
-    logger.custom(getLang("build.start.logged", { botID: global.botID }), "LOGIN");
 
-    // قاعدة البيانات
+    logger.custom(
+      getLang("build.start.logged", { botID: global.botID }),
+      "LOGIN"
+    );
+
     const xDatabase = new XDatabase(api, global.config.DATABASE);
     await xDatabase.init();
 
-    // لوحة التحكم
+    new Assets();
+    logger.custom(getLang("build.start.plugin.loading"), "LOADER");
+    await loadPlugins(xDatabase);
+
     const serverAdminPassword = getRandomPassword(8);
     process.env.SERVER_ADMIN_PASSWORD = serverAdminPassword;
     startServer(serverAdminPassword);
 
-    // بدء الاستماع
     await booting(api, xDatabase);
-
   } catch (err) {
     logger.error(err);
     process.exit(1);
@@ -98,64 +105,84 @@ async function booting(api, xDatabase) {
 }
 
 /* =======================
-   MQTT LISTENER (خفيف جدًا)
+   MQTT (AUTO RECOVER)
 ======================= */
 async function startListen(api, xDatabase) {
   const listenerID = generateListenerID();
   global.listenerID = listenerID;
 
-  // تنظيف listener قديم
-  if (global.listenMqtt) {
-    global.listenMqtt.stopListening();
-    global.listenMqtt = null;
-  }
-
-  // lazy load handler لتقليل RAM
-  const listenHandler = async (...args) => {
-    const handler = await handleListen(listenerID, xDatabase);
-    return handler(...args);
-  };
-
+  const listenHandler = await handleListen(listenerID, xDatabase);
   global.listenMqtt = api.listenMqtt(listenHandler);
 
-  global.listenMqtt.on("error", (err) => {
-    // تسجيل فقط، بدون إعادة تشغيل
-    logger.error("MQTT listener error (ignored to save RAM):");
+  global.listenMqtt.on("error", async (err) => {
+    logger.error("MQTT connection lost, reconnecting...");
     console.error(err);
+    await restartBot();
   });
 
-  logger.custom("MQTT listener started (RAM optimized).", "MQTT");
+  logger.custom("MQTT listener started (auto recover enabled).", "MQTT");
 }
 
 /* =======================
-   APPSTATE SAVE (خفيف)
+   AUTO RECONNECT
+======================= */
+async function restartBot() {
+  try {
+    global.listenMqtt?.stopListening?.();
+
+    logger.system("Reconnecting Facebook session...");
+
+    const api = await loginState();
+    global.api = api;
+    global.botID = api.getCurrentUserID();
+
+    const xDatabase = new XDatabase(api, global.config.DATABASE);
+    await xDatabase.init();
+
+    await booting(api, xDatabase);
+
+    logger.system("Bot reconnected successfully ✔");
+  } catch (err) {
+    logger.error("Reconnect failed");
+    console.error(err);
+  }
+}
+
+/* =======================
+   APPSTATE SAVE (12H)
 ======================= */
 const _12HOUR = 1000 * 60 * 60 * 12;
 
 function refreshState() {
   setInterval(() => {
     try {
-      if (!global.api) return;
       const newAppState = global.api.getAppState();
 
-      if (!global.config.APPSTATE_PATH) return;
-
-      if (global.config.APPSTATE_PROTECTION) {
+      if (global.config.APPSTATE_PROTECTION === true) {
         if (isGlitch) {
-          writeFileSync(resolvePath(process.cwd(), ".data", "appstate.json"),
-            JSON.stringify(newAppState));
+          writeFileSync(
+            resolvePath(process.cwd(), ".data", "appstate.json"),
+            JSON.stringify(newAppState, null, 2)
+          );
         } else if (isReplit) {
           const db = new replitDB();
           db.get("APPSTATE_SECRET_KEY").then((key) => {
             if (!key) return;
-            const encrypted = aes.encrypt(JSON.stringify(newAppState), key);
-            writeFileSync(resolvePath(global.config.APPSTATE_PATH),
-              JSON.stringify(encrypted));
+            const encrypted = aes.encrypt(
+              JSON.stringify(newAppState),
+              key
+            );
+            writeFileSync(
+              resolvePath(global.config.APPSTATE_PATH),
+              JSON.stringify(encrypted)
+            );
           });
         }
       } else {
-        writeFileSync(resolvePath(global.config.APPSTATE_PATH),
-          JSON.stringify(newAppState));
+        writeFileSync(
+          resolvePath(global.config.APPSTATE_PATH),
+          JSON.stringify(newAppState, null, 2)
+        );
       }
     } catch (e) {
       logger.error("Failed to refresh appstate");
@@ -168,18 +195,19 @@ function refreshState() {
    LOGIN
 ======================= */
 async function loginState() {
-  let appState = [];
-  if (existsSync(global.config.APPSTATE_PATH)) {
-    appState = await checkAppstate(global.config.APPSTATE_PATH,
-      global.config.APPSTATE_PROTECTION);
-  }
+  const appState = await checkAppstate(
+    global.config.APPSTATE_PATH,
+    global.config.APPSTATE_PROTECTION
+  );
 
   const options = {
     ...global.config.FCA_OPTIONS,
-    enableAutoRefresh: true,
+
+    enableAutoRefresh: true, // 🔴 سبب حل مشكلة 6 ساعات
     forceLogin: false,
     listenEvents: true,
     selfListen: false,
+
     ultraLowBanMode: true,
     enableAntiDetection: true,
     enableHumanBehavior: true,
